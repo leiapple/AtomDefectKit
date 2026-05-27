@@ -6,10 +6,8 @@ import os
 from dataclasses import dataclass
 
 from ase import Atom, Atoms
-from ase.constraints import FixedPlane
 from ase.filters import UnitCellFilter
 from ase.io import write
-from ase.lattice.cubic import BodyCenteredCubic
 from ase.optimize import BFGS, FIRE, LBFGS
 from ase.optimize.sciopt import SciPyFminCG
 import matplotlib.pyplot as plt
@@ -69,13 +67,12 @@ class TractionSeparationCurve:
 
 
 class TractionSeparationWorkflow:
-    """Build and analyze traction-separation curves, including H-coverage scans."""
+    """Build and analyze traction-separation curves for pure and H-decorated slabs."""
 
     def __init__(
         self,
+        atoms,
         calculator,
-        lattice_constant,
-        element="Fe",
         directions=None,
         repeat=(3, 3, 16),
         working_dir=".",
@@ -96,9 +93,8 @@ class TractionSeparationWorkflow:
         Raises:
             ValueError: If ``optimizer`` is not one of the supported names.
         """
+        self.atoms = atoms
         self.calc = calculator
-        self.element = element
-        self.alat = lattice_constant
         self.directions = directions or ([0, 0, -1], [1, 1, 0], [1, -1, 0])
         self.repeat = repeat
         self.working_dir = working_dir
@@ -106,38 +102,6 @@ class TractionSeparationWorkflow:
         os.makedirs(self.working_dir, exist_ok=True)
         if self.optimizer not in {"FIRE", "BFGS", "LBFGS"}:
             raise ValueError(f"Optimizer must be 'FIRE', 'BFGS', or 'LBFGS', not {optimizer}")
-
-    @staticmethod
-    def base_tetra_sites_frac(eps: float = 1e-2):
-        """Return the reference tetrahedral H sites in fractional slab coordinates.
-
-        Args:
-            eps: Small z offset used to distinguish top and bottom adsorption sites.
-
-        Returns:
-            list[tuple[float, float, float, str]]: Fractional coordinates and layer labels.
-        """
-        return [
-            (0.37, 0.5, 0.5 + eps, "top"),
-            (0.37, 0.0, 0.5 + eps, "top"),
-            (0.37, 0.5, 0.5 - eps, "bottom"),
-            (0.87, 0.0, 0.5 - eps, "bottom"),
-        ]
-
-    @staticmethod
-    def frac_to_cart(cell: np.ndarray, u: float, v: float, w: float) -> np.ndarray:
-        """Convert fractional coordinates into Cartesian coordinates.
-
-        Args:
-            cell: 3x3 cell matrix.
-            u: Fractional coordinate along the first cell vector.
-            v: Fractional coordinate along the second cell vector.
-            w: Fractional coordinate along the third cell vector.
-
-        Returns:
-            np.ndarray: Cartesian position.
-        """
-        return u * cell[0] + v * cell[1] + w * cell[2]
 
     def generate_tetra_sites(self, cell: np.ndarray, nx: int, ny: int, eps: float = 1e-3):
         """Tile the reference tetrahedral H sites across the in-plane supercell.
@@ -151,14 +115,19 @@ class TractionSeparationWorkflow:
         Returns:
             list[dict]: Site records containing positions, layer labels, and tile indices.
         """
-        base = self.base_tetra_sites_frac(eps)
+        base_sites = [
+            (0.37, 0.5, 0.5 + eps, "top"),
+            (0.37, 0.0, 0.5 + eps, "top"),
+            (0.37, 0.5, 0.5 - eps, "bottom"),
+            (0.87, 0.0, 0.5 - eps, "bottom"),
+        ]
         sites = []
         for ix in range(nx):
             for iy in range(ny):
-                for site_id, (u, v, w, layer) in enumerate(base):
+                for site_id, (u, v, w, layer) in enumerate(base_sites):
                     U = (ix + (u % 1.0)) / nx
                     V = (iy + (v % 1.0)) / ny
-                    cart = self.frac_to_cart(cell, U, V, w)
+                    cart = U * cell[0] + V * cell[1] + w * cell[2]
                     sites.append(
                         {
                             "pos": cart,
@@ -176,25 +145,10 @@ class TractionSeparationWorkflow:
         Returns:
             ase.Atoms: Repeated and centered slab structure.
         """
-        bcc = BodyCenteredCubic(
-            self.element,
-            latticeconstant=self.alat,
-            directions=self.directions,
-        )
-        slab = bcc.repeat(self.repeat)
+        
+        slab = self.atoms.repeat(self.repeat)
         slab.center(vacuum=0.0, axis=2)
         return slab
-
-    @staticmethod
-    def apply_z_fixedplane(atoms):
-        """Constrain host atoms to relax only within planes normal to z.
-
-        Args:
-            atoms: Structure to constrain in place.
-        """
-        fixed_indices = [atom.index for atom in atoms if atom.symbol != "H"]
-        if fixed_indices:
-            atoms.set_constraint(FixedPlane(indices=fixed_indices, direction=[0, 0, 1]))
 
     @staticmethod
     def make_gap_from_base(slab, vac):
@@ -219,28 +173,6 @@ class TractionSeparationWorkflow:
         return shifted
 
     @staticmethod
-    def strip_for_xyz(atoms, vac_value, step_idx):
-        """Return a trajectory frame with lightweight metadata for XYZ output.
-
-        Args:
-            atoms: Structure to serialize.
-            vac_value: Gap opening associated with the frame.
-            step_idx: Integer frame index along the opening path.
-
-        Returns:
-            ase.Atoms: Copied structure with metadata stored in ``Atoms.info``.
-        """
-        clean = Atoms(
-            numbers=atoms.get_atomic_numbers(),
-            positions=atoms.get_positions(),
-            cell=atoms.get_cell(),
-            pbc=atoms.get_pbc(),
-        )
-        clean.info["vacuum_gap_Ang"] = float(vac_value)
-        clean.info["frame_index"] = int(step_idx)
-        return clean
-
-    @staticmethod
     def surface_area_from_atoms(atoms):
         """Compute the in-plane surface area from the first two cell vectors.
 
@@ -254,12 +186,12 @@ class TractionSeparationWorkflow:
         return np.linalg.norm(np.cross(cell[0], cell[1]))
 
     @staticmethod
-    def ts_from_points(seps, eners, areas):
-        """Convert discrete energy-separation points into midpoint tractions.
+    def _compute_traction_curve(seps, energies, areas):
+        """Convert sampled separation energies into midpoint tractions.
 
         Args:
             seps: Separation distances in Angstrom.
-            eners: Total energies in eV.
+            energies: Total energies in eV.
             areas: Surface areas in Angstrom squared.
 
         Returns:
@@ -270,7 +202,7 @@ class TractionSeparationWorkflow:
         tracs = np.empty(n)
         for i in range(n):
             sep0, sep1 = seps[i], seps[i + 1]
-            E0, E1 = eners[i], eners[i + 1]
+            E0, E1 = energies[i], energies[i + 1]
             A0, A1 = areas[i], areas[i + 1]
             sepas[i] = 0.5 * (sep0 + sep1)
             area_avg = 0.5 * (A0 + A1)
@@ -371,7 +303,85 @@ class TractionSeparationWorkflow:
             struct.append(Atom("H", position=site["pos"]))
         return struct
 
-    def run_coverage_scan(
+    def _scan_separation_curve(self, base, label, vacuum_values, write_xyz=True):
+        """Evaluate one traction-separation curve for a prepared base slab.
+
+        Args:
+            base: Relaxed reference slab before opening the separation gap.
+            label: Short label used in trajectory and logfile names.
+            vacuum_values: Separation distances used to open the cleavage gap.
+            write_xyz: Whether to save an ``extxyz`` trajectory for the scan.
+
+        Returns:
+            tuple[np.ndarray, np.ndarray, np.ndarray]:
+            sampled separations, energies, and surface areas.
+        """
+        base_area = self.surface_area_from_atoms(base)
+        energies = []
+        seps = []
+        areas = []
+        frames = []
+
+        for step_idx, vac in enumerate(vacuum_values):
+            geom = self.make_gap_from_base(base, vac)
+            geom.calc = self.calc
+            energy = geom.get_potential_energy()
+
+            energies.append(energy)
+            seps.append(vac)
+            areas.append(base_area)
+            if write_xyz:
+                frame = Atoms(
+                    numbers=geom.get_atomic_numbers(),
+                    positions=geom.get_positions(),
+                    cell=geom.get_cell(),
+                    pbc=geom.get_pbc(),
+                )
+                frame.info["vacuum_gap_Ang"] = float(vac)
+                frame.info["frame_index"] = int(step_idx)
+                frames.append(frame)
+
+        if write_xyz:
+            traj_name = os.path.join(self.working_dir, f"trajectory_{label}.extxyz")
+            write(traj_name, frames, format="extxyz")
+
+        return np.array(seps), np.array(energies), np.array(areas)
+
+    def run_pure_separation(self, vacuum_values, write_xyz=True):
+        """Run a traction-separation calculation for the pure metal slab.
+
+        Args:
+            vacuum_values: Separation distances used to open the cleavage gap.
+            write_xyz: Whether to save an ``extxyz`` trajectory for the scan.
+
+        Returns:
+            dict: Separation distances, energies, areas, midpoint tractions,
+            and derived cohesive metrics for the pure slab.
+        """
+        slab = self.build_bcc_slab()
+        base = self.relax_base_structure(slab, nH=0)
+        seps, energies, areas = self._scan_separation_curve(
+            base,
+            label="pure",
+            vacuum_values=vacuum_values,
+            write_xyz=write_xyz,
+        )
+        mid_seps, tractions = self._compute_traction_curve(seps, energies, areas)
+        mid_seps = np.insert(mid_seps, 0, 0.0)
+        tractions = np.insert(tractions, 0, 0.0)
+
+        return {
+            "separation": seps,
+            "energy": energies,
+            "area": areas,
+            "midpoint_separation": mid_seps,
+            "traction": tractions,
+            "curve": TractionSeparationCurve.from_arrays(seps, energies, area=float(np.mean(areas))),
+            "surface_energy_J_m2": float(np.trapz(tractions, mid_seps) * 0.1 / 2.0),
+            "sigma_max_GPa": float(np.max(tractions)),
+        }
+
+    def run_h_separation(
         self,
         nH_list,
         vacuum_values,
@@ -405,36 +415,17 @@ class TractionSeparationWorkflow:
         for nH in nH_list:
             base = self.add_hydrogen_sites(slab, nH, top_sites, bot_sites)
             base = self.relax_base_structure(base, nH=nH)
-            base_area = self.surface_area_from_atoms(base)
-
-            energies = []
-            seps = []
-            areas = []
-            frames = []
-
-            for step_idx, vac in enumerate(vacuum_values):
-                geom = self.make_gap_from_base(base, vac)
-                geom.calc = self.calc
-                energy = geom.get_potential_energy()
-
-                energies.append(energy)
-                seps.append(vac)
-                areas.append(base_area)
-                frames.append(self.strip_for_xyz(geom, vac, step_idx))
+            seps_arr, eners_arr, areas_arr = self._scan_separation_curve(
+                base,
+                label=f"H{nH}",
+                vacuum_values=vacuum_values,
+                write_xyz=write_xyz,
+            )
+            for vac in seps_arr:
                 manifest.append(f"{nH}\t{vac:.6f}\n")
-
-                if step_idx == len(vacuum_values) - 1:
-                    nH_top, nH_bottom = self.count_surface_H(geom, z_tol=z_tol)
-                    effective_cov[nH] = nH_top + nH_bottom
-
-            if write_xyz:
-                traj_name = os.path.join(self.working_dir, f"trajectory_H{nH}.extxyz")
-                write(traj_name, frames, format="extxyz")
-
-            seps_arr = np.array(seps)
-            eners_arr = np.array(energies)
-            areas_arr = np.array(areas)
-            mid_seps, tracs = self.ts_from_points(seps_arr, eners_arr, areas_arr)
+            nH_top, nH_bottom = self.count_surface_H(base, z_tol=z_tol)
+            effective_cov[nH] = nH_top + nH_bottom
+            mid_seps, tracs = self._compute_traction_curve(seps_arr, eners_arr, areas_arr)
             mid_seps = np.insert(mid_seps, 0, 0.0)
             tracs = np.insert(tracs, 0, 0.0)
 
@@ -483,12 +474,19 @@ class TractionSeparationWorkflow:
             "nH_sorted": nH_sorted,
             "manifest_path": manifest_path,
         }
-        self.save_scan_data(results)
-        self.plot_scan(results)
+        self._write_outputs(results)
         return results
 
-    def save_scan_data(self, results):
-        """Write the text summaries produced by the H-coverage scan.
+    def run_coverage_scan(self, *args, **kwargs):
+        """Backward-compatible alias for ``run_h_separation``.
+
+        Returns:
+            dict: Results dictionary returned by ``run_h_separation``.
+        """
+        return self.run_h_separation(*args, **kwargs)
+
+    def _write_outputs(self, results):
+        """Write text summaries and plots for a completed H-coverage scan.
 
         Args:
             results: Results dictionary returned by ``run_coverage_scan``.
@@ -527,12 +525,6 @@ class TractionSeparationWorkflow:
                 sigma = results["sigma_max"][nH]
                 file.write(f"{theta:8.5f}  {nH:3d}  {nH_surf:3d}  {sigma:12.6f}\n")
 
-    def plot_scan(self, results):
-        """Generate the TS, surface-energy, and peak-stress figures for the scan.
-
-        Args:
-            results: Results dictionary returned by ``run_coverage_scan``.
-        """
         nH_sorted = results["nH_sorted"]
 
         fig, ax = plt.subplots(figsize=(7, 5.5))
@@ -587,3 +579,51 @@ class TractionSeparationWorkflow:
         fig.tight_layout()
         fig.savefig(os.path.join(self.working_dir, "theta_vs_sigma_max.png"), dpi=300)
         plt.close(fig)
+
+    def plot_pure_separation(self, results, save_name="pure_traction_separation.png"):
+        """Plot stress versus separation for a pure-metal traction-separation run.
+
+        Args:
+            results: Results dictionary returned by ``run_pure_separation``.
+            save_name: Output figure name saved inside ``working_dir``.
+
+        Returns:
+            tuple[matplotlib.figure.Figure, matplotlib.axes.Axes]: Created figure and axes.
+        """
+        x = results["midpoint_separation"]
+        y = results["traction"]
+
+        fig, ax = plt.subplots(figsize=(6, 4))
+        ax.plot(x, y, marker="o")
+        ax.set_xlabel("Separation distance (Å)")
+        ax.set_ylabel("Normal stress (GPa)")
+        ax.set_title("Traction-Separation Curve")
+        ax.grid(True, alpha=0.3)
+        fig.tight_layout()
+        fig.savefig(os.path.join(self.working_dir, save_name), dpi=300)
+        return fig, ax
+
+    def plot_h_separation(self, results, save_name="h_traction_separation.png"):
+        """Plot stress versus separation for H-decorated traction-separation runs.
+
+        Args:
+            results: Results dictionary returned by ``run_h_separation``.
+            save_name: Output figure name saved inside ``working_dir``.
+
+        Returns:
+            tuple[matplotlib.figure.Figure, matplotlib.axes.Axes]: Created figure and axes.
+        """
+        fig, ax = plt.subplots(figsize=(7, 5))
+        for nH in results["nH_sorted"]:
+            x = results["ts_data"][nH]["x"]
+            y = results["mean_ts"][nH]
+            ax.plot(x, y, marker="o", label=f"nH={nH}")
+
+        ax.set_xlabel("Separation distance (Å)")
+        ax.set_ylabel("Normal stress (GPa)")
+        ax.set_title("Traction-Separation Curves")
+        ax.legend()
+        ax.grid(True, alpha=0.3)
+        fig.tight_layout()
+        fig.savefig(os.path.join(self.working_dir, save_name), dpi=300)
+        return fig, ax
