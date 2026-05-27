@@ -13,6 +13,8 @@ dependencies = [
     "ipykernel>=7.2.0",
     "jupyter>=1.1.1",
     "matscipy>=1.1,<1.2",
+    "phonopy>=4.1.0",
+    "spglib>=2.7.0",
     "tensorpotential>=0.5.9",
 ]
 

@@ -138,6 +138,8 @@ dependencies = [
     { name = "ipykernel" },
     { name = "jupyter" },
     { name = "matscipy" },
+    { name = "phonopy" },
+    { name = "spglib" },
     { name = "tensorpotential" },
 ]
 
@@ -153,8 +155,10 @@ requires-dist = [
     { name = "ipykernel", specifier = ">=7.2.0" },
     { name = "jupyter", specifier = ">=1.1.1" },
     { name = "matscipy", specifier = ">=1.1,<1.2" },
+    { name = "phonopy", specifier = ">=4.1.0" },
     { name = "pyace", marker = "extra == 'ace'", git = "https://github.com/ICAMS/python-ace.git" },
     { name = "setuptools", marker = "extra == 'ace'", specifier = "<81" },
+    { name = "spglib", specifier = ">=2.7.0" },
     { name = "tensorpotential", specifier = ">=0.5.9" },
 ]
 provides-extras = ["ace"]
@@ -1571,6 +1575,42 @@ wheels = [
 ]
 
 [[package]]
+name = "phonopy"
+version = "4.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "h5py" },
+    { name = "matplotlib" },
+    { name = "numpy" },
+    { name = "phonors" },
+    { name = "pyyaml" },
+    { name = "spglib" },
+    { name = "symfc" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/42/09/1c5c2821508f06edeedf42bc197f123ca70dcc381262ec4a3950b08fa597/phonopy-4.1.0.tar.gz", hash = "sha256:24698f620551d74ae22c0913dc141e1dd9104b50bd51cabd0dc19ebcfb705851", size = 5254690, upload-time = "2026-05-25T04:09:57.526Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/86/ac/d87d5451293b8e8189247092979d1da55c12a4c87daac023cab8cb066219/phonopy-4.1.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:249a64fe2c0da2bd9e2e89074d00e38e9d6224c11d2ccb72ffe3e8e06d1fe9c9", size = 637114, upload-time = "2026-05-25T04:09:10.198Z" },
+    { url = "https://files.pythonhosted.org/packages/6d/a4/da28e1155942856331e1be9ae6310fccbd05a12071f0e48619138cf82c04/phonopy-4.1.0-cp311-cp311-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:42a3a0fa0880eb8d5e85e7762cd115d2c794d9766d1488eadc96c8baa0671411", size = 761143, upload-time = "2026-05-25T04:09:12.344Z" },
+    { url = "https://files.pythonhosted.org/packages/30/45/5da51bd2c64f74b7e0437595f2c4d8159687db3bd87f7d860c83cea2749d/phonopy-4.1.0-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:4c0b8e16360514dde692f2861d0d54347cdce483d5b01e67cb431ce600b9c9f0", size = 773258, upload-time = "2026-05-25T04:09:14.048Z" },
+    { url = "https://files.pythonhosted.org/packages/d1/0e/72819a11293f75b8fb7ff0b5ae40166329c2423d7abd63b55b74ba985b32/phonopy-4.1.0-cp311-cp311-win_amd64.whl", hash = "sha256:d760b4c8af81d750ba4b3207633ac7aa5b884fc59a35690978344142812fcecc", size = 647293, upload-time = "2026-05-25T04:09:16.003Z" },
+    { url = "https://files.pythonhosted.org/packages/58/0f/a0ed8844b23b951e5beaecfd82ca808d35b4fcfbb104ee7e9c2512faa363/phonopy-4.1.0-cp311-cp311-win_arm64.whl", hash = "sha256:22a4c34733607346548c3ceaab00cee1c7e969b51823316e706e72d019c1d5e1", size = 624277, upload-time = "2026-05-25T04:09:17.74Z" },
+]
+
+[[package]]
+name = "phonors"
+version = "0.2.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/d2/50/26737fd96cf5cee6f9a8935563ed016224b677ebb618754744fb0bc4d853/phonors-0.2.0.tar.gz", hash = "sha256:75023abb30e0d874a7af24d732e8839cc07091389de34644d3853489a4d42a50", size = 112131, upload-time = "2026-05-24T22:43:49.884Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/53/62/6cd8b16f5c5e3f1d006c1aac0acaba1b25a16e030493356dd266227be3e3/phonors-0.2.0-cp310-abi3-macosx_10_12_x86_64.whl", hash = "sha256:aa897d3fedccef8d6c9d370349e83b5cb0569ef908c854d60eb54034127e479d", size = 724217, upload-time = "2026-05-24T22:43:39.032Z" },
+    { url = "https://files.pythonhosted.org/packages/92/77/2b99232c3186fb3398513e150d46383d3429dd843e129130d8c1304859f3/phonors-0.2.0-cp310-abi3-macosx_11_0_arm64.whl", hash = "sha256:7867556d86d96d0c93a2d60c44cd392730c5652dc1c01f10a16e5b7b8c16c776", size = 685400, upload-time = "2026-05-24T22:43:41.244Z" },
+    { url = "https://files.pythonhosted.org/packages/79/8f/21aea83b833728821fc642247171cd7a396ac7bce95ee541cb83521b7243/phonors-0.2.0-cp310-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a23c073eba269613ade2ee09daf01cfd9cc9472c4a3fb9ebc791801bb1183b66", size = 731930, upload-time = "2026-05-24T22:43:42.668Z" },
+    { url = "https://files.pythonhosted.org/packages/83/6d/23adf329b0ce2da7023b533170fc27dcc529542bcff0e89babf614e1e90f/phonors-0.2.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:23a7413e6d41dc7140d9dd813c5ada4be08a9db0c458bca0e42a12625419f5cc", size = 763301, upload-time = "2026-05-24T22:43:44.491Z" },
+    { url = "https://files.pythonhosted.org/packages/6c/a0/831365007dee65d15179daaddd9758d63c2dc068fff9d14830782929a28d/phonors-0.2.0-cp310-abi3-win_amd64.whl", hash = "sha256:2036314eed7d56bd29967b446c6316be91ffac099f650b1e256cd721759b1822", size = 696142, upload-time = "2026-05-24T22:43:46.502Z" },
+    { url = "https://files.pythonhosted.org/packages/35/2a/71732152a7faf28a03826ad50d24c060447d2a7b1dd4b22b9dae94d0cd81/phonors-0.2.0-cp310-abi3-win_arm64.whl", hash = "sha256:de7828fc4d084c5291ba0e95ca6926f80ffc1c83fc4742425e0c601973c8aad3", size = 640360, upload-time = "2026-05-24T22:43:48.362Z" },
+]
+
+[[package]]
 name = "pillow"
 version = "11.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2055,6 +2095,23 @@ wheels = [
 ]
 
 [[package]]
+name = "spglib"
+version = "2.7.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a9/06/7964acb4c444191376bd87f91579475fbe7623ca943cce40cee8fb7f2c36/spglib-2.7.0.tar.gz", hash = "sha256:c40907a42c9dc45572f46740bf95412f84fb0eda30267e31665d104a4bde6627", size = 2366134, upload-time = "2025-12-29T09:48:26.42Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/44/a8/d841ae7743c58227af277f7f16aa844376fa11c426090d6ae35e7e93af76/spglib-2.7.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:3cf0ff80c01d8631ef4b9f1b78da79ff2044834e6e2d870f7f20c8579c921136", size = 910793, upload-time = "2025-12-29T09:47:32.063Z" },
+    { url = "https://files.pythonhosted.org/packages/e8/02/11baf94cf682cdaafa046b72d4b2adcf944e19e2b2741454e329dedb2fc2/spglib-2.7.0-cp311-cp311-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:a7b29d2cfca6ac53e927686ca0b91257126e47f6abfa26451723a5cd40070352", size = 944977, upload-time = "2025-12-29T09:47:33.638Z" },
+    { url = "https://files.pythonhosted.org/packages/ce/fa/6d1bc8f8cb08945ca8c37c95b42bf336b6b9a8a737eced1ce64f0cebe9ce/spglib-2.7.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:f892ecce2dd1bc636b14a4e5bc13aabb73b008bd37a4d23636882c8971c432a0", size = 960531, upload-time = "2025-12-29T09:47:36.932Z" },
+    { url = "https://files.pythonhosted.org/packages/b0/79/2fd5e33b431cd0afcdd441bd10704c11cdf74c09b721249297284e5bf0b2/spglib-2.7.0-cp311-cp311-win_amd64.whl", hash = "sha256:468879702577124dcde0607a75396576e256f1cfa2d8fe48da4a928fbb27abc6", size = 669827, upload-time = "2025-12-29T09:47:38.47Z" },
+    { url = "https://files.pythonhosted.org/packages/f7/e9/4e07c9c1bda40df54e09bd686eae0dc13d46e76a5ef4d43582971a86eb32/spglib-2.7.0-cp311-cp311-win_arm64.whl", hash = "sha256:ceb6730a2324d0c83579c803f3782e28bd41e79bbfe0c3dfdbf30e3d3a6320e5", size = 649076, upload-time = "2025-12-29T09:47:40.367Z" },
+]
+
+[[package]]
 name = "stack-data"
 version = "0.6.3"
 source = { registry = "https://pypi.org/simple" }
@@ -2066,6 +2123,20 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/28/e3/55dcc2cfbc3ca9c29519eb6884dd1415ecb53b0e934862d3559ddcb7e20b/stack_data-0.6.3.tar.gz", hash = "sha256:836a778de4fec4dcd1dcd89ed8abff8a221f58308462e1c4aa2a3cf30148f0b9", size = 44707, upload-time = "2023-09-30T13:58:05.479Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f1/7b/ce1eafaf1a76852e2ec9b22edecf1daa58175c090266e9f6c64afcd81d91/stack_data-0.6.3-py3-none-any.whl", hash = "sha256:d5558e0c25a4cb0853cddad3d77da9891a08cb85dd9f9f91b9f8cd66e511e695", size = 24521, upload-time = "2023-09-30T13:58:03.53Z" },
+]
+
+[[package]]
+name = "symfc"
+version = "1.7.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+    { name = "scipy" },
+    { name = "spglib" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ec/09/1143bc18794e5b5c5c1687b06292b17568eb3a8ec31c4e70ac229c01aa78/symfc-1.7.2.tar.gz", hash = "sha256:2ef8ed0372b45be3562e1ec516332bf1ef3526556f6cbae7049064301b9e12b1", size = 1235881, upload-time = "2026-05-27T05:40:04.358Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8e/f2/07723dc570fec07f6956dbb2b4abda3e0b7b813cf3976ecf8d2a93bb73c5/symfc-1.7.2-py3-none-any.whl", hash = "sha256:e076f5b422fc5e6ba33981f694224cb34d6d63406f074d31a61afe174bc44bd1", size = 106601, upload-time = "2026-05-27T05:40:02.745Z" },
 ]
 
 [[package]]

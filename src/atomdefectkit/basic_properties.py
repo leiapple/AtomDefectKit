@@ -212,56 +212,151 @@ class BasicProperties:
         labels_path=None,
         formula: str | None = None,
         info: dict | None = None,
+        supercell_matrix=None,
     ) -> str:
-        """
-        Calculate and plot the phonon dispersion relation using PhonoCalc.
+        """Calculate and plot the phonon dispersion relation.
 
-        Parameters
-        ----------
-        structure : ase.Atoms
-            Structure for the phonon calculation.
-        special_points : dict[str, tuple[float, float, float]] | None
-            High-symmetry points in fractional reciprocal coordinates.
-            Example for bcc:
-                {'G': (0, 0, 0),
-                 'H': (0.5, -0.5, 0.5),
-                 'N': (0, 0, 0.5),
-                 'P': (0.25, 0.25, 0.25)}
-        labels_path : list[list[str]] | None
-            Band path as a list of label sequences.
-            Example for bcc:
-                [[['N', 'G', 'H', 'P', 'G']]]
-        formula : str | None
-            Label used when saving the phonon-dispersion figure. Defaults to the
-            chemical formula from ``structure``.
-        info : dict | None
-            Extra metadata forwarded to ``plot_band_structure``.
+        Args:
+            structure: Structure used for the phonon calculation.
+            special_points: Optional high-symmetry points in fractional reciprocal
+                coordinates. When omitted, ASE derives them from the primitive cell.
+            labels_path: Optional band path as a sequence of label paths, e.g.
+                ``[['N', 'G', 'H', 'P', 'G']]``.
+            formula: Optional label used in the output filename and plot title.
+            info: Optional metadata dictionary; if it contains ``label`` or ``title``,
+                that value is used in the plot title.
+            supercell_matrix: Optional Phonopy supercell matrix. When omitted, a
+                ``3x3x3`` diagonal supercell is used.
 
-        Returns
-        -------
-        str
-            Path to the saved phonon-dispersion figure.
+        Returns:
+            str: Path to the saved phonon-dispersion figure.
+
+        Raises:
+            ImportError: If the required ``phonopy`` or ``spglib`` dependency is missing.
+            RuntimeError: If the primitive cell cannot be determined from ``structure``.
         """
         try:
-            from phonocalc import PhonoCalc, plot_band_structure
+            import ase
+            import spglib
+            from ase.cell import Cell
+            from ase import Atoms
+            from phonopy import Phonopy
+            from phonopy.phonon.band_structure import get_band_qpoints_and_path_connections
+            from phonopy.structure.atoms import PhonopyAtoms
         except ImportError as exc:
             raise ImportError(
-                "Phonon dispersion requires the optional 'phonocalc' dependency."
+                "Phonon dispersion requires the optional dependencies 'phonopy' and 'spglib'."
             ) from exc
+
+        def ase2phono(atoms):
+            return PhonopyAtoms(
+                symbols=atoms.get_chemical_symbols(),
+                cell=atoms.cell.array,
+                scaled_positions=atoms.get_scaled_positions(),
+            )
+
+        def phono2ase(cell):
+            return Atoms(
+                symbols=list(cell.symbols),
+                cell=np.asarray(cell.cell),
+                scaled_positions=np.asarray(cell.scaled_positions),
+                pbc=True,
+            )
+
+        def format_k_label(label):
+            return "Γ" if label == "G" else label
 
         atoms = structure.copy()
         atoms.calc = self.calculator
-
         if formula is None:
             formula = atoms.get_chemical_formula()
         if info is None:
             info = {}
+        if supercell_matrix is None:
+            supercell_matrix = np.diag([3, 3, 3])
 
-        PhonoCalc(atoms, self.calculator).get_band_structure(
-            special_points=special_points,
-            labels_path=labels_path,
+        unitcell = ase2phono(atoms)
+        phonon = Phonopy(
+            unitcell=unitcell,
+            supercell_matrix=supercell_matrix,
+            primitive_matrix="auto",
         )
-        fig_path = plot_band_structure(atoms, formula, info)
+        phonon.generate_displacements(distance=0.01)
+
+        set_of_forces = []
+        for cell in phonon.supercells_with_displacements:
+            displaced = phono2ase(cell)
+            displaced.calc = self.calculator
+            forces = displaced.get_forces()
+            forces -= np.mean(forces, axis=0)
+            set_of_forces.append(forces)
+        phonon.produce_force_constants(forces=np.array(set_of_forces))
+
+        lattice = atoms.get_cell().T
+        positions = atoms.get_scaled_positions()
+        numbers = atoms.get_atomic_numbers()
+        atoms_cell = (lattice, positions, numbers)
+        primitive = spglib.find_primitive(atoms_cell)
+        if primitive is None:
+            raise RuntimeError("Failed to determine the primitive cell for the phonon calculation.")
+        cell = Cell(primitive[0])
+
+        if special_points is None:
+            special_points = cell.get_bravais_lattice().get_special_points()
+        if labels_path is None:
+            labels_path = ase.dft.kpoints.parse_path_string(cell.bandpath().path)
+
+        labels = []
+        path = []
+        for label_path in labels_path:
+            segment = []
+            for label in label_path:
+                labels.append(label)
+                segment.append(list(special_points[label]))
+            path.append(segment)
+
+        qpoints, connections = get_band_qpoints_and_path_connections(path, npoints=51)
+        phonon.run_band_structure(qpoints, path_connections=connections, labels=labels)
+        bands_dict = phonon.get_band_structure_dict()
+        bands_dict["labels_path"] = labels_path
+        atoms.info["force_constants"] = phonon.force_constants
+        atoms.info["band_dict"] = bands_dict
+
+        fig, ax = plt.subplots(figsize=(6, 4))
+        segment_distances = bands_dict["distances"]
+        segment_frequencies = bands_dict["frequencies"]
+
+        for distances, frequencies in zip(segment_distances, segment_frequencies):
+            frequencies = np.asarray(frequencies)
+            if frequencies.ndim == 1:
+                frequencies = frequencies[:, None]
+            for band in frequencies.T:
+                ax.plot(distances, band, color="tab:blue", linewidth=1.5)
+        tick_positions = [segment_distances[0][0]]
+        tick_labels = [format_k_label(labels_path[0][0])]
+        segment_index = 0
+
+        for label_path in labels_path:
+            for label in label_path[1:]:
+                tick_positions.append(segment_distances[segment_index][-1])
+                tick_labels.append(format_k_label(label))
+                segment_index += 1
+
+        for xpos in tick_positions:
+            ax.axvline(x=xpos, color="0.8", linewidth=0.8)
+        ax.axhline(y=0.0, color="0.4", linewidth=0.8, linestyle="--")
+        ax.set_xticks(tick_positions)
+        ax.set_xticklabels(tick_labels)
+        ax.set_ylabel("Frequency (THz)")
+        primitive_formula = "".join(phonon.primitive.symbols)
+        title = info.get("title") or info.get("label") or f"{primitive_formula} phonon dispersion"
+        ax.set_title(title)
+        ax.set_xlim(segment_distances[0][0], segment_distances[-1][-1])
+        fig.tight_layout()
+
+        fig_path = os.path.join(self.working_dir, f"{formula}_phonon_dispersion.png")
+        fig.savefig(fig_path, dpi=300)
+
         return fig_path
 
     def calculate_vacancy_formation_energy(self, structure):
