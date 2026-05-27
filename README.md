@@ -1,6 +1,6 @@
 ## AtomDefectKit
 
-![AtomDefectKit logo](assets/atomdefectkit_logo_icon.png)
+![AtomDefectKit logo](assets/atomdefectkit_logo_primary.png)
 
 `AtomDefectKit` is a Python package for atomistic defect simulations and analysis, with the current workflows focused on BCC metals, screw dislocations, and related defect physics.
 
