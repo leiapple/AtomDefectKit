@@ -1,5 +1,7 @@
 ## AtomDefectKit
 
+![AtomDefectKit logo](assets/atomdefectkit_logo_primary.png)
+
 `AtomDefectKit` is a Python package for atomistic defect simulations and analysis, with the current workflows focused on BCC metals, screw dislocations, and related defect physics.
 
 Current migrated components:
@@ -21,26 +23,6 @@ AtomDefectKit/
   defects/
   fracture/
   analysis/
-```
-
-### Working with the project via uv
-
-Create or sync the environment:
-
-```bash
-uv sync
-```
-
-Run Python in the project environment:
-
-```bash
-uv run python
-```
-
-Install an extra dependency:
-
-```bash
-uv add scikit-learn
 ```
 
 ### ACE calculator note
@@ -75,12 +57,6 @@ import atomdefectkit
 
 print(atomdefectkit.available_models())
 print(atomdefectkit.available_model_metadata())
-```
-
-Run tests:
-
-```bash
-uv run pytest
 ```
 
 ### Notes
