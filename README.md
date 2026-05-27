@@ -17,12 +17,7 @@ Current migrated components:
 
 ```text
 AtomDefectKit/
-  materials/
-  models/
-  dislocations/
-  defects/
-  fracture/
-  analysis/
+
 ```
 
 ### ACE calculator note
