@@ -11,3 +11,7 @@ wheels/
 
 # Generated test outputs
 scripts/Test_*/
+
+# Generated demo outputs
+demo/Test_*/
+demo/ts_*/
