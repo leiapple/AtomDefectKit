@@ -141,6 +141,108 @@ class BasicProperties:
 
         self.calculator = calculator
 
+    def get_calculator(self):
+        """Return the ASE calculator attached to this workflow.
+
+        Returns:
+            ASE-compatible calculator: Calculator loaded directly or through a model
+            registry entry.
+        """
+        return self.calculator
+
+    def create_stacking_fault_workflow(
+        self,
+        atoms,
+        formula: str | None = None,
+        info: str = "Calculated",
+        optimizer: str = "FIRE",
+        working_dir: str | None = None,
+    ):
+        """Create a stacking-fault workflow that reuses this workflow calculator.
+
+        Args:
+            atoms: Reference structure used to build the faulted slab.
+            formula: Optional chemical formula label used in output filenames.
+            info: Short label written into summary files and plot legends.
+            optimizer: Geometry optimizer label passed to the stacking-fault workflow.
+            working_dir: Optional directory for stacking-fault outputs. When omitted,
+                ``self.working_dir`` is reused.
+
+        Returns:
+            StackingFaultWorkflow: Workflow instance sharing this calculator.
+        """
+        from atomdefectkit.stacking_fault import StackingFaultWorkflow
+
+        return StackingFaultWorkflow(
+            atoms=atoms,
+            calculator=self.calculator,
+            formula=formula,
+            info=info,
+            optimizer=optimizer,
+            working_dir=working_dir or self.working_dir,
+        )
+
+    def create_traction_separation_workflow(
+        self,
+        atoms,
+        surface_index=None,
+        repeat=(3, 3, 16),
+        working_dir: str | None = None,
+        optimizer: str = "FIRE",
+    ):
+        """Create a traction-separation workflow that reuses this workflow calculator.
+
+        Args:
+            atoms: Reference bulk or slab structure.
+            surface_index: Optional surface Miller index such as ``(1, 0, 0)``.
+            repeat: Supercell repetition counts along the slab directions.
+            working_dir: Optional directory for traction-separation outputs. When
+                omitted, ``self.working_dir`` is reused.
+            optimizer: Geometry optimizer label passed to the TS workflow.
+
+        Returns:
+            TractionSeparationWorkflow: Workflow instance sharing this calculator.
+        """
+        from atomdefectkit.traction_separation import TractionSeparationWorkflow
+
+        return TractionSeparationWorkflow(
+            atoms=atoms,
+            calculator=self.calculator,
+            surface_index=surface_index,
+            repeat=repeat,
+            working_dir=working_dir or self.working_dir,
+            optimizer=optimizer,
+        )
+
+    def create_screw_dislocation_workflow(
+        self,
+        element,
+        lattice_constant,
+        elastic_constant,
+        working_dir: str | None = None,
+    ):
+        """Create a screw-dislocation workflow that reuses this workflow calculator.
+
+        Args:
+            element: Chemical symbol of the BCC metal.
+            lattice_constant: Relaxed lattice constant in Angstrom.
+            elastic_constant: Elastic constants array passed to the screw workflow.
+            working_dir: Optional output directory. When omitted, ``self.working_dir``
+                is reused.
+
+        Returns:
+            BCCScrewDislocation: Workflow instance sharing this calculator.
+        """
+        from atomdefectkit.screw import BCCScrewDislocation
+
+        return BCCScrewDislocation(
+            element=element,
+            lattice_constant=lattice_constant,
+            elastic_constant=elastic_constant,
+            calculator=self.calculator,
+            working_dir=working_dir or self.working_dir,
+        )
+
     def birch_murnaghan_eos(self, params, vol):
         E0, B0, Bp, V0 = params
         eta = (vol / V0) ** (1.0 / 3.0)
@@ -213,6 +315,7 @@ class BasicProperties:
         formula: str | None = None,
         info: dict | None = None,
         supercell_matrix=None,
+        primitive_matrix="auto",
     ) -> str:
         """Calculate and plot the phonon dispersion relation.
 
@@ -227,6 +330,10 @@ class BasicProperties:
                 that value is used in the plot title.
             supercell_matrix: Optional Phonopy supercell matrix. When omitted, a
                 ``3x3x3`` diagonal supercell is used.
+            primitive_matrix: Primitive-cell setting passed to Phonopy. The default
+                ``"auto"`` keeps the standard primitive-cell phonon workflow for
+                crystals like BCC while silencing the corresponding Phonopy default
+                warning.
 
         Returns:
             str: Path to the saved phonon-dispersion figure.
@@ -243,6 +350,7 @@ class BasicProperties:
             from phonopy import Phonopy
             from phonopy.phonon.band_structure import get_band_qpoints_and_path_connections
             from phonopy.structure.atoms import PhonopyAtoms
+            from phonopy.structure.cells import PrimitiveMatrixAutoDefaultWarning
         except ImportError as exc:
             raise ImportError(
                 "Phonon dispersion requires the optional dependencies 'phonopy' and 'spglib'."
@@ -276,11 +384,17 @@ class BasicProperties:
             supercell_matrix = np.diag([3, 3, 3])
 
         unitcell = ase2phono(atoms)
-        phonon = Phonopy(
-            unitcell=unitcell,
-            supercell_matrix=supercell_matrix,
-            primitive_matrix="auto",
-        )
+        with warnings.catch_warnings():
+            if primitive_matrix == "auto":
+                warnings.filterwarnings(
+                    "ignore",
+                    category=PrimitiveMatrixAutoDefaultWarning,
+                )
+            phonon = Phonopy(
+                unitcell=unitcell,
+                supercell_matrix=supercell_matrix,
+                primitive_matrix=primitive_matrix,
+            )
         phonon.generate_displacements(distance=0.01)
 
         set_of_forces = []

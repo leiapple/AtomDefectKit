@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from ase import Atom, Atoms
 from ase.filters import UnitCellFilter
 from ase.io import write
+from ase.build import surface
 from ase.optimize import BFGS, FIRE, LBFGS
 from ase.optimize.sciopt import SciPyFminCG
 import matplotlib.pyplot as plt
@@ -73,7 +74,7 @@ class TractionSeparationWorkflow:
         self,
         atoms,
         calculator,
-        directions=None,
+        surface_index=None,
         repeat=(3, 3, 16),
         working_dir=".",
         optimizer="FIRE",
@@ -81,10 +82,11 @@ class TractionSeparationWorkflow:
         """Initialize the traction-separation workflow.
 
         Args:
+            atoms: Reference bulk or slab structure.
             calculator: ASE-compatible calculator used for all energy evaluations.
-            lattice_constant: Lattice constant of the reference crystal in Angstrom.
-            element: Host element symbol used to build the slab.
-            directions: Crystal directions passed to ``BodyCenteredCubic``.
+            surface_index: Optional surface Miller index, e.g. ``(1, 0, 0)``,
+                ``(1, 1, 0)``, or ``(1, 1, 1)``. When omitted, the input
+                ``atoms`` are assumed to already define the desired slab orientation.
             repeat: Supercell repetition counts along the three slab directions.
             working_dir: Directory where trajectories, logs, text files, and plots are saved.
             optimizer: Geometry optimizer label. Supported values are ``FIRE``,
@@ -95,13 +97,20 @@ class TractionSeparationWorkflow:
         """
         self.atoms = atoms
         self.calc = calculator
-        self.directions = directions or ([0, 0, -1], [1, 1, 0], [1, -1, 0])
+        self.surface_index = surface_index
         self.repeat = repeat
         self.working_dir = working_dir
         self.optimizer = optimizer.upper()
         os.makedirs(self.working_dir, exist_ok=True)
         if self.optimizer not in {"FIRE", "BFGS", "LBFGS"}:
             raise ValueError(f"Optimizer must be 'FIRE', 'BFGS', or 'LBFGS', not {optimizer}")
+        if self.surface_index is not None:
+            allowed_surfaces = {(1, 0, 0), (1, 1, 0), (1, 1, 1)}
+            self.surface_index = tuple(self.surface_index)
+            if self.surface_index not in allowed_surfaces:
+                raise ValueError(
+                    "surface_index must be one of (1, 0, 0), (1, 1, 0), or (1, 1, 1)."
+                )
 
     def generate_tetra_sites(self, cell: np.ndarray, nx: int, ny: int, eps: float = 1e-3):
         """Tile the reference tetrahedral H sites across the in-plane supercell.
@@ -140,13 +149,22 @@ class TractionSeparationWorkflow:
         return sites
 
     def build_bcc_slab(self):
-        """Build the oriented BCC slab used for traction-separation scans.
+        """Build the slab used for traction-separation scans.
 
         Returns:
             ase.Atoms: Repeated and centered slab structure.
         """
-        
-        slab = self.atoms.repeat(self.repeat)
+        if self.surface_index is None:
+            slab = self.atoms.repeat(self.repeat)
+        else:
+            slab = surface(
+                self.atoms,
+                self.surface_index,
+                layers=self.repeat[2],
+                periodic=True,
+                vacuum=0.0,
+            )
+            slab = slab.repeat((self.repeat[0], self.repeat[1], 1))
         slab.center(vacuum=0.0, axis=2)
         return slab
 

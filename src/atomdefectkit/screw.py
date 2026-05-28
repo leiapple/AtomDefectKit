@@ -1,7 +1,7 @@
 """BCC screw dislocation setup and analysis tools."""
 
 from __future__ import annotations
-
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 from ase.build import bulk
@@ -15,7 +15,7 @@ from matscipy.elasticity import fit_elastic_constants
 class BCCScrewDislocation:
     """Create, relax, and analyze screw dislocation dipoles in BCC metals."""
 
-    def __init__(self, element, lattice_constant, elastic_constant, calculator):
+    def __init__(self, element, lattice_constant, elastic_constant, calculator, working_dir='.'):
         self.element = element
         self.a0 = lattice_constant
         self.cij = elastic_constant
@@ -24,6 +24,8 @@ class BCCScrewDislocation:
         self.relaxed_structure = None
         self.dd_map = None
         self.dd_map_relaxed = None
+        self.dir = os.path.join(working_dir, 'screw_disloc')
+        os.makedirs(self.dir, exist_ok=True)
 
     def create_dislocation_object(self):
         alat = uc.set_in_units(self.a0, "angstrom")
@@ -77,13 +79,15 @@ class BCCScrewDislocation:
         relaxed_system = am.load("ase_Atoms", dislocation_dipole_ase, prop=properties)
         return base_system, relaxed_system
 
-    def plot_differential_displacement_map(self, dislocation, base_system, dislocation_system, filename="dislocation.png"):
+    def plot_differential_displacement_map(self, dislocation, base_system, dislocation_system):
+
         lattice_constant = dislocation.ucell.box.a
         burgers_vector = dislocation.dislsol.burgers
         big_base_system = base_system.supersize(1, 1, 3)
         big_dislocation_system = dislocation_system.supersize(1, 1, 3)
         neighbor_cutoff = 0.9 * lattice_constant
         neighbors = big_dislocation_system.neighborlist(cutoff=neighbor_cutoff)
+        filename=os.path.join(f"{self.dir}", "dd_plot.png")
 
         dd = am.defect.DifferentialDisplacement(
             big_base_system,

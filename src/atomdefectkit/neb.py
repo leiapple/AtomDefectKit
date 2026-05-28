@@ -32,7 +32,7 @@ class BCCScrewDislocPeierlsBarrier:
         self.Nreplica = Nreplica
         self.calc = calc
         self.optimizer = optimizer.upper()
-        self.working_dir = working_dir
+        self.working_dir = os.path.join(working_dir, 'screw_disloc')
         os.makedirs(self.working_dir, exist_ok=True)
         if self.optimizer not in ["FIRE", "BFGS", "LBFGS"]:
             raise ValueError(f"Optimizer must be 'FIRE', 'BFGS', or 'LBFGS', not {optimizer}")
