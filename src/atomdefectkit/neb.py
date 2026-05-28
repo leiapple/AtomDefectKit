@@ -2,18 +2,17 @@
 
 from __future__ import annotations
 
-import os
-
 from ase.filters import FrechetCellFilter
 from ase.io import read
 from ase.mep import NEB
-from ase.optimize import BFGS, FIRE, LBFGS
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from atomdefectkit.utils.optimizers import build_optimizer, normalize_optimizer_name
+from atomdefectkit.utils.paths import WorkingDirectoryMixin
 
 
-class BCCScrewDislocPeierlsBarrier:
+class BCCScrewDislocPeierlsBarrier(WorkingDirectoryMixin):
     """Calculate Peierls barriers with a NEB workflow."""
 
     def __init__(
@@ -31,25 +30,13 @@ class BCCScrewDislocPeierlsBarrier:
         self.model_name = model_name
         self.Nreplica = Nreplica
         self.calc = calc
-        self.optimizer = optimizer.upper()
-        self.working_dir = os.path.join(working_dir, 'screw_disloc')
-        os.makedirs(self.working_dir, exist_ok=True)
-        if self.optimizer not in ["FIRE", "BFGS", "LBFGS"]:
-            raise ValueError(f"Optimizer must be 'FIRE', 'BFGS', or 'LBFGS', not {optimizer}")
-
-    def _get_optimizer(self, atoms, trajectory=None):
-        if trajectory:
-            trajectory = f"{self.working_dir}/{trajectory}"
-        if self.optimizer == "FIRE":
-            return FIRE(atoms, trajectory=trajectory)
-        if self.optimizer == "BFGS":
-            return BFGS(atoms, trajectory=trajectory)
-        return LBFGS(atoms, trajectory=trajectory)
+        self.optimizer = normalize_optimizer_name(optimizer)
+        self.init_working_dir(working_dir, "screw_disloc")
 
     def relax_initial_final(self, fmax=0.001, steps=10000):
         for config in [self.initial_config, self.final_config]:
             config.calc = self.calc
-            opt = self._get_optimizer(FrechetCellFilter(config))
+            opt = build_optimizer(FrechetCellFilter(config), self.optimizer)
             opt.run(fmax=fmax, steps=steps)
 
         E_diff = self.final_config.get_potential_energy() - self.initial_config.get_potential_energy()
@@ -101,7 +88,11 @@ class BCCScrewDislocPeierlsBarrier:
             image.calc = self.calc
 
         neb = NEB(images, k=spring_constant, allow_shared_calculator=True, climb=True)
-        optimizer = self._get_optimizer(neb, trajectory="neb.traj")
+        optimizer = build_optimizer(
+            neb,
+            self.optimizer,
+            trajectory=self.path("neb.traj"),
+        )
         optimizer.run(fmax=fmax, steps=steps)
 
     def plot_barrier(
@@ -113,7 +104,7 @@ class BCCScrewDislocPeierlsBarrier:
         compare_vasp=False,
         vasp_data_file=None,
     ):
-        images = read(f"{self.working_dir}/{trajectory}@-{self.Nreplica}:")
+        images = read(f"{self.path(trajectory)}@-{self.Nreplica}:")
         reaction_coords = np.linspace(0, 1, self.Nreplica)
         energies = []
 
@@ -121,14 +112,14 @@ class BCCScrewDislocPeierlsBarrier:
             image.calc = self.calc
             energies.append(image.get_potential_energy())
             if write_poscar:
-                image.write(f"{self.working_dir}/neb_{i}.poscar")
+                image.write(self.path(f"neb_{i}.poscar"))
 
         energies = np.array(energies)
         energies = 1000 * (energies - min(energies)) / 2
 
         if save_csv:
             df = pd.DataFrame({"Reaction_Coordinate": reaction_coords, "Energy_meV": energies})
-            csv_path = os.path.join(self.working_dir, "peierls_barrier_data.csv")
+            csv_path = self.path("peierls_barrier_data.csv")
             df.to_csv(csv_path, index=False)
 
         fig, ax = plt.subplots(figsize=(4, 4))
@@ -144,6 +135,5 @@ class BCCScrewDislocPeierlsBarrier:
         ax.legend()
         ax.grid(True)
         fig.tight_layout()
-        fig.savefig(os.path.join(self.working_dir, "peierls_barrier.png"), dpi=300)
+        fig.savefig(self.path("peierls_barrier.png"), dpi=300)
         return fig, ax
-

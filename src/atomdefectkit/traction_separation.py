@@ -8,13 +8,15 @@ from dataclasses import dataclass
 from ase import Atom, Atoms
 from ase.filters import UnitCellFilter
 from ase.io import write
-from ase.build import surface
-from ase.optimize import BFGS, FIRE, LBFGS
 from ase.optimize.sciopt import SciPyFminCG
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 import matplotlib.cm as cm
 import numpy as np
+from atomdefectkit.utils.optimizers import build_optimizer, normalize_optimizer_name
+from atomdefectkit.utils.paths import WorkingDirectoryMixin
+from atomdefectkit.utils.plotting import plot_xy_curves
+from atomdefectkit.utils.slabs import build_repeated_slab, build_surface_slab
 
 
 @dataclass
@@ -67,7 +69,7 @@ class TractionSeparationCurve:
         return float(np.max(values))
 
 
-class TractionSeparationWorkflow:
+class TractionSeparationWorkflow(WorkingDirectoryMixin):
     """Build and analyze traction-separation curves for pure and H-decorated slabs."""
 
     def __init__(
@@ -99,11 +101,8 @@ class TractionSeparationWorkflow:
         self.calc = calculator
         self.surface_index = surface_index
         self.repeat = repeat
-        self.working_dir = working_dir
-        self.optimizer = optimizer.upper()
-        os.makedirs(self.working_dir, exist_ok=True)
-        if self.optimizer not in {"FIRE", "BFGS", "LBFGS"}:
-            raise ValueError(f"Optimizer must be 'FIRE', 'BFGS', or 'LBFGS', not {optimizer}")
+        self.init_working_dir(working_dir)
+        self.optimizer = normalize_optimizer_name(optimizer)
         if self.surface_index is not None:
             allowed_surfaces = {(1, 0, 0), (1, 1, 0), (1, 1, 1)}
             self.surface_index = tuple(self.surface_index)
@@ -155,17 +154,16 @@ class TractionSeparationWorkflow:
             ase.Atoms: Repeated and centered slab structure.
         """
         if self.surface_index is None:
-            slab = self.atoms.repeat(self.repeat)
+            slab = build_repeated_slab(self.atoms, repeat=self.repeat, vacuum=0.0, center_axis=2)
         else:
-            slab = surface(
+            slab = build_surface_slab(
                 self.atoms,
                 self.surface_index,
                 layers=self.repeat[2],
-                periodic=True,
+                repeat=(self.repeat[0], self.repeat[1], 1),
                 vacuum=0.0,
+                center_axis=2,
             )
-            slab = slab.repeat((self.repeat[0], self.repeat[1], 1))
-        slab.center(vacuum=0.0, axis=2)
         return slab
 
     @staticmethod
@@ -262,23 +260,6 @@ class TractionSeparationWorkflow:
                 nH_top += 1
         return nH_top, nH_bottom
 
-    def _get_optimizer(self, atoms, logfile):
-        """Create the configured optimizer for a given structure.
-
-        Args:
-            atoms: Structure to optimize.
-            logfile: Optimizer logfile name.
-
-        Returns:
-            FIRE | BFGS | LBFGS: Configured ASE optimizer instance.
-        """
-        logfile = os.path.join(self.working_dir, logfile)
-        if self.optimizer == "FIRE":
-            return FIRE(atoms, logfile=logfile)
-        if self.optimizer == "BFGS":
-            return BFGS(atoms, logfile=logfile)
-        return LBFGS(atoms, logfile=logfile)
-
     def relax_base_structure(self, atoms, nH, fmax_cell=1e-3, fmax_atoms=1e-2, steps=200000):
         """Run the two-stage relaxation used before opening traction-separation gaps.
 
@@ -294,9 +275,13 @@ class TractionSeparationWorkflow:
         """
         atoms.calc = self.calc
         ucf = UnitCellFilter(atoms)
-        opt = SciPyFminCG(ucf, logfile=os.path.join(self.working_dir, f"box_relax_H{nH}.log"))
+        opt = SciPyFminCG(ucf, logfile=self.path(f"box_relax_H{nH}.log"))
         opt.run(fmax=fmax_cell, steps=steps)
-        opt2 = FIRE(atoms, logfile=os.path.join(self.working_dir, f"fire_relax_H{nH}.log"))
+        opt2 = build_optimizer(
+            atoms,
+            self.optimizer,
+            logfile=self.path(f"{self.optimizer.lower()}_relax_H{nH}.log"),
+        )
         opt2.run(fmax=fmax_atoms, steps=steps)
         atoms.set_constraint()
         return atoms
@@ -360,7 +345,7 @@ class TractionSeparationWorkflow:
                 frames.append(frame)
 
         if write_xyz:
-            traj_name = os.path.join(self.working_dir, f"trajectory_{label}.extxyz")
+            traj_name = self.path(f"trajectory_{label}.extxyz")
             write(traj_name, frames, format="extxyz")
 
         return np.array(seps), np.array(energies), np.array(areas)
@@ -453,7 +438,7 @@ class TractionSeparationWorkflow:
                 raise RuntimeError("Midpoint separations differ between H coverages.")
             ts_data[nH]["ys"].append(tracs)
 
-        manifest_path = os.path.join(self.working_dir, "manifest_all_seeds.txt")
+        manifest_path = self.path("manifest_all_seeds.txt")
         with open(manifest_path, "w", encoding="utf-8") as file:
             file.writelines(manifest)
 
@@ -509,7 +494,7 @@ class TractionSeparationWorkflow:
         Args:
             results: Results dictionary returned by ``run_coverage_scan``.
         """
-        ts_txt = os.path.join(self.working_dir, "TS_curves_with_effective_coverage.txt")
+        ts_txt = self.path("TS_curves_with_effective_coverage.txt")
         with open(ts_txt, "w", encoding="utf-8") as file:
             file.write("# theta_eff  nH_init  nH_surface  sep_A  mean_stress_GPa  std_stress_GPa\n")
             for nH in results["nH_sorted"]:
@@ -525,7 +510,7 @@ class TractionSeparationWorkflow:
                     )
                 file.write("\n")
 
-        gamma_txt = os.path.join(self.working_dir, "surface_energy_from_TS_all_seeds.txt")
+        gamma_txt = self.path("surface_energy_from_TS_all_seeds.txt")
         with open(gamma_txt, "w", encoding="utf-8") as file:
             file.write("# theta_eff  nH_init  nH_surface  gamma_J_per_m2\n")
             for nH in results["nH_sorted"]:
@@ -534,7 +519,7 @@ class TractionSeparationWorkflow:
                 gamma = results["gamma_data"][nH]
                 file.write(f"{theta:8.5f}  {nH:3d}  {nH_surf:3d}  {gamma:.8f}\n")
 
-        theta_sigma_txt = os.path.join(self.working_dir, "theta_sigma_max.txt")
+        theta_sigma_txt = self.path("theta_sigma_max.txt")
         with open(theta_sigma_txt, "w", encoding="utf-8") as file:
             file.write("# theta_eff  nH_init  nH_surface  sigma_max_GPa\n")
             for nH in results["nH_sorted"]:
@@ -570,7 +555,7 @@ class TractionSeparationWorkflow:
         cbar = fig.colorbar(sm, ax=ax, pad=0.02)
         cbar.set_label(r"Effective surface H coverage $\theta$")
         fig.tight_layout()
-        fig.savefig(os.path.join(self.working_dir, "ts_curves_H_colorbar_effcov.png"), dpi=300)
+        fig.savefig(self.path("ts_curves_H_colorbar_effcov.png"), dpi=300)
         plt.close(fig)
 
         fig, ax = plt.subplots(figsize=(7, 5.0))
@@ -585,7 +570,7 @@ class TractionSeparationWorkflow:
         ax.set_ylabel("Surface energy (J/m²)")
         ax.set_title("Surface energy from TS integration vs effective coverage")
         fig.tight_layout()
-        fig.savefig(os.path.join(self.working_dir, "surface_energy_bar_theta.png"), dpi=300)
+        fig.savefig(self.path("surface_energy_bar_theta.png"), dpi=300)
         plt.close(fig)
 
         fig, ax = plt.subplots(figsize=(6.5, 4.5))
@@ -595,7 +580,7 @@ class TractionSeparationWorkflow:
         ax.set_ylabel(r"Maximum normal stress $\sigma_\mathrm{max}$ (GPa)")
         ax.set_title(r"$\theta$–$\sigma_\mathrm{max}$ relation from TS curves")
         fig.tight_layout()
-        fig.savefig(os.path.join(self.working_dir, "theta_vs_sigma_max.png"), dpi=300)
+        fig.savefig(self.path("theta_vs_sigma_max.png"), dpi=300)
         plt.close(fig)
 
     def plot_pure_separation(self, results, save_name="pure_traction_separation.png"):
@@ -611,14 +596,14 @@ class TractionSeparationWorkflow:
         x = results["midpoint_separation"]
         y = results["traction"]
 
-        fig, ax = plt.subplots(figsize=(6, 4))
-        ax.plot(x, y, marker="o")
-        ax.set_xlabel("Separation distance (Å)")
-        ax.set_ylabel("Normal stress (GPa)")
-        ax.set_title("Traction-Separation Curve")
-        ax.grid(True, alpha=0.3)
-        fig.tight_layout()
-        fig.savefig(os.path.join(self.working_dir, save_name), dpi=300)
+        fig, ax = plot_xy_curves(
+            curves=[{"x": x, "y": y, "marker": "o"}],
+            xlabel="Separation distance (Å)",
+            ylabel="Normal stress (GPa)",
+            title="Traction-Separation Curve",
+            save_path=self.path(save_name),
+            figsize=(6, 4),
+        )
         return fig, ax
 
     def plot_h_separation(self, results, save_name="h_traction_separation.png"):
@@ -631,17 +616,22 @@ class TractionSeparationWorkflow:
         Returns:
             tuple[matplotlib.figure.Figure, matplotlib.axes.Axes]: Created figure and axes.
         """
-        fig, ax = plt.subplots(figsize=(7, 5))
-        for nH in results["nH_sorted"]:
-            x = results["ts_data"][nH]["x"]
-            y = results["mean_ts"][nH]
-            ax.plot(x, y, marker="o", label=f"nH={nH}")
-
-        ax.set_xlabel("Separation distance (Å)")
-        ax.set_ylabel("Normal stress (GPa)")
-        ax.set_title("Traction-Separation Curves")
-        ax.legend()
-        ax.grid(True, alpha=0.3)
-        fig.tight_layout()
-        fig.savefig(os.path.join(self.working_dir, save_name), dpi=300)
+        curves = [
+            {
+                "x": results["ts_data"][nH]["x"],
+                "y": results["mean_ts"][nH],
+                "marker": "o",
+                "label": f"nH={nH}",
+            }
+            for nH in results["nH_sorted"]
+        ]
+        fig, ax = plot_xy_curves(
+            curves=curves,
+            xlabel="Separation distance (Å)",
+            ylabel="Normal stress (GPa)",
+            title="Traction-Separation Curves",
+            save_path=self.path(save_name),
+            figsize=(7, 5),
+            show_legend=True,
+        )
         return fig, ax

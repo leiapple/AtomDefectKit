@@ -1,10 +1,7 @@
 # 
 
 from atomdefectkit.basic_properties import BasicProperties
-from atomdefectkit.screw import BCCScrewDislocation
 from atomdefectkit.neb import BCCScrewDislocPeierlsBarrier
-from atomdefectkit.stacking_fault import StackingFaultWorkflow
-from atomdefectkit.traction_separation import TractionSeparationWorkflow
 
 import numpy as np
 
@@ -21,6 +18,7 @@ calc = PyACECalculator('/Users/leizhang/Nextcloud/1_Science_Postdoc_Projects/0_0
 
 # Initialize the basic-property workflow with a direct ACE calculator.
 workflow = BasicProperties(calculator=calc, working_dir=working_dir)
+calc = workflow.get_calculator()
 
 # Build the conventional cubic BCC unit cell.
 atoms = bulk(elem, crystal_structure, a=initial_a0, cubic=True)
@@ -78,7 +76,10 @@ workflow.save_properties(
 )
 
 # Plot the calculated properties against the stored DFT reference data.
-workflow.plot_comparison(f"{working_dir}/{elem}_basicProp.json", f'../data/basic_properties/dft_{elem}.json')
+workflow.plot_comparison(
+    workflow.path(f"{elem}_basicProp.json"),
+    f"../data/basic_properties/dft_{elem}.json",
+)
 
 # calculate phonon dispersion
 special_points = {
@@ -98,9 +99,8 @@ fig_path = workflow.calculate_phonon_dispersion(
 )
 
 # Calculate stacking fault energy curve
-SF = StackingFaultWorkflow(
+SF = workflow.create_stacking_fault_workflow(
     atoms=atoms.copy(),
-    calculator=calc,
     formula="Nb",
     info="ACE",
     optimizer="FIRE",
@@ -114,7 +114,7 @@ SF.stacking_fault(
     miller=(1, -1, 0),
     distance=a0_fit/2,
     layers=30,
-    num_steps=20,
+    num_steps=50,
     fmax=0.005,
     steps=1000,
     write_xyz=True,
@@ -127,16 +127,15 @@ SF.stacking_fault(
     miller=(1, 1, 2),
     distance=a0_fit/2,
     layers=40,
-    num_steps=100,
+    num_steps=50,
     fmax=0.005,
     steps=1000,
     write_xyz=True,
 )
 
 # Traction separation (100)
-TS_100 = TractionSeparationWorkflow(
+TS_100 = workflow.create_traction_separation_workflow(
     atoms=atoms,
-    calculator=calc,
     surface_index=(1, 0, 0),
     repeat=(3, 3, 16),
     working_dir=f'{working_dir}/ts_100',
@@ -148,12 +147,11 @@ results = TS_100.run_pure_separation(
 TS_100.plot_pure_separation(results)
 
 # Traction separation (110)
-TS_110 = TractionSeparationWorkflow(
+TS_110 = workflow.create_traction_separation_workflow(
     atoms=atoms,
-    calculator=calc,
     surface_index=(1, 1, 0),
     repeat=(3, 3, 16),
-    working_dir=f'{working_dir}/ts_100',
+    working_dir=f'{working_dir}/ts_110',
 )
 results = TS_110.run_pure_separation(
     vacuum_values=np.linspace(0.0, 4.0, 40),
@@ -162,7 +160,12 @@ results = TS_110.run_pure_separation(
 TS_110.plot_pure_separation(results)
 
 # screw dislocation
-dislocation_system = BCCScrewDislocation(elem, a0_fit, Cij, calc, working_dir=working_dir)
+dislocation_system = workflow.create_screw_dislocation_workflow(
+    element=elem,
+    lattice_constant=a0_fit,
+    elastic_constant=Cij,
+    working_dir=working_dir,
+)
 
 bcc_disl_init = dislocation_system.create_dislocation_object()
 # Relax the initial dislocation dipole configuration.
@@ -201,10 +204,11 @@ dislocation_system.plot_differential_displacement_map(bcc_disl_final,
 
 bcc_screw_neb = BCCScrewDislocPeierlsBarrier(dislocation_dipole_ase_initial, 
                                              dislocation_dipole_ase_final, 
-                                             calc, model_name='ACE2025', 
+                                             calc,
+                                             model_name='ACE2025', 
                                              Nreplica=11, 
                                              optimizer='FIRE', 
-                                             working_dir=f'{working_dir}/')
+                                             working_dir=working_dir)
 bcc_screw_neb.relax_initial_final()
 bcc_screw_neb.run_neb(fmax=0.005, spring_constant=0.1)
 bcc_screw_neb.plot_barrier(element=f'{elem}', compare_vasp=False)

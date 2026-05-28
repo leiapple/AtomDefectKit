@@ -8,11 +8,12 @@ from dataclasses import dataclass
 from ase.build.tools import cut, rotate
 from ase.constraints import FixedLine
 from ase.io import write
-from ase.optimize import BFGS, FIRE, LBFGS
 import ase.units as units
 
-import matplotlib.pyplot as plt
 import numpy as np
+from atomdefectkit.utils.optimizers import build_optimizer, normalize_optimizer_name
+from atomdefectkit.utils.paths import WorkingDirectoryMixin
+from atomdefectkit.utils.plotting import plot_xy_curves
 
 
 @dataclass
@@ -68,7 +69,7 @@ class StackingFaultCurve:
         return float(np.min(energies[1:-1]))
 
 
-class StackingFaultWorkflow:
+class StackingFaultWorkflow(WorkingDirectoryMixin):
     """Build, relax, and plot generalized stacking-fault energy curves."""
 
     def __init__(
@@ -98,27 +99,8 @@ class StackingFaultWorkflow:
         self.calc = calculator
         self.formula = formula or self.atoms.get_chemical_formula()
         self.info = info
-        self.optimizer = optimizer.upper()
-        self.working_dir = working_dir
-        os.makedirs(self.working_dir, exist_ok=True)
-        if self.optimizer not in {"FIRE", "BFGS", "LBFGS"}:
-            raise ValueError(f"Optimizer must be 'FIRE', 'BFGS', or 'LBFGS', not {optimizer}")
-
-    def _get_optimizer(self, atoms, logfile):
-        """Create the configured optimizer for a given ASE ``Atoms`` object.
-
-        Args:
-            atoms: Structure to optimize.
-            logfile: Logfile name or path for the optimizer.
-
-        Returns:
-            FIRE | BFGS | LBFGS: Configured ASE optimizer instance.
-        """
-        if self.optimizer == "FIRE":
-            return FIRE(atoms, logfile=logfile)
-        if self.optimizer == "BFGS":
-            return BFGS(atoms, logfile=logfile)
-        return LBFGS(atoms, logfile=logfile)
+        self.optimizer = normalize_optimizer_name(optimizer)
+        self.init_working_dir(working_dir)
 
     def _relax(self, atoms, fmax=0.01, steps=1000, logfile="stacking_fault_relax.log"):
         """Relax a structure with the workflow calculator and optimizer.
@@ -133,7 +115,11 @@ class StackingFaultWorkflow:
             ase.Atoms: Relaxed structure.
         """
         atoms.calc = self.calc
-        optimizer = self._get_optimizer(atoms, logfile=os.path.join(self.working_dir, logfile))
+        optimizer = build_optimizer(
+            atoms,
+            self.optimizer,
+            logfile=self.path(logfile),
+        )
         optimizer.run(fmax=fmax, steps=steps)
         return atoms
 
@@ -222,7 +208,7 @@ class StackingFaultWorkflow:
         slide_step = shift_distance / num_steps
 
         miller_str = "-".join(map(str, miller))
-        xyz_path = os.path.join(self.working_dir, f"{self.formula}_{miller_str}_StackingFault.xyz")
+        xyz_path = self.path(f"{self.formula}_{miller_str}_StackingFault.xyz")
         if write_xyz and os.path.exists(xyz_path):
             os.remove(xyz_path)
 
@@ -246,9 +232,9 @@ class StackingFaultWorkflow:
         energies -= energies[0]
         coords = np.linspace(0, 1, len(energies))
 
-        out_path = os.path.join(self.working_dir, f"{self.formula}_{miller_str}_stacking_fault.out")
-        fig_path = os.path.join(self.working_dir, f"{self.formula}_{miller_str}_stacking_fault.png")
-        summary_path = os.path.join(self.working_dir, f"{self.formula}_{miller_str}_stacking_fault.out")
+        out_path = self.path(f"{self.formula}_{miller_str}_stacking_fault.out")
+        fig_path = self.path(f"{self.formula}_{miller_str}_stacking_fault.png")
+        summary_path = self.path(f"{self.formula}_{miller_str}_stacking_fault.out")
 
         with open(out_path, "w", encoding="utf-8") as file:
             file.write("Reaction_Coordinate   Energy(meV/A^2)\n")
@@ -261,13 +247,14 @@ class StackingFaultWorkflow:
                 file=file,
             )
 
-        fig, ax = plt.subplots(figsize=(5, 4))
-        ax.plot(coords, energies * 1000, marker="o", label=self.info)
-        ax.set_xlabel("Reaction Coordinate")
-        ax.set_ylabel("Energy (meV/A^2)")
-        ax.legend()
-        ax.grid(True, alpha=0.3)
-        fig.tight_layout()
-        fig.savefig(fig_path, dpi=300)
+        plot_xy_curves(
+            curves=[{"x": coords, "y": energies * 1000, "marker": "o", "label": self.info}],
+            xlabel="Reaction Coordinate",
+            ylabel="Energy (meV/A^2)",
+            title="Stacking-Fault Curve",
+            save_path=fig_path,
+            figsize=(5, 4),
+            show_legend=True,
+        )
 
         return energies.tolist()

@@ -5,14 +5,12 @@ from __future__ import annotations
 import ast
 import importlib
 import json
-import os
 import warnings
-
-import matplotlib.pyplot as plt
-import numpy as np
+import os 
 
 import ase.units as units
-from ase.build import surface
+import matplotlib.pyplot as plt
+import numpy as np
 from ase.filters import StrainFilter
 from ase.optimize import BFGS, FIRE
 
@@ -25,8 +23,10 @@ from atomdefectkit.model_errors import (
     format_unknown_model_error,
 )
 from atomdefectkit.registry import MODEL_REGISTRY
+from atomdefectkit.utils.paths import WorkingDirectoryMixin
+from atomdefectkit.utils.slabs import build_surface_slab
 
-class BasicProperties:
+class BasicProperties(WorkingDirectoryMixin):
     """Run basic bulk, surface, defect, and postprocessing workflows with an ASE calculator."""
 
     def __init__(
@@ -62,8 +62,7 @@ class BasicProperties:
 
         self.device = device
         self.calculator = None
-        self.working_dir = working_dir
-        os.makedirs(working_dir, exist_ok=True)
+        self.init_working_dir(working_dir)
 
         if calculator is not None:
             self.calculator = calculator
@@ -284,7 +283,7 @@ class BasicProperties:
     def calculate_equilibrium_a0_relax(self, atoms, fmax=0.01):
         atoms.calc = self.calculator
         sf = StrainFilter(atoms, mask=[True, True, True, False, False, False])
-        dyn = BFGS(sf, logfile=f"{self.working_dir}/relax_box.log")
+        dyn = BFGS(sf, logfile=self.path("relax_box.log"))
         dyn.run(fmax=fmax)
         return atoms.cell.cellpar()[0]
 
@@ -294,7 +293,14 @@ class BasicProperties:
         return Cij / units.GPa
 
     def calculate_surface_energy(self, structure, miller_indices, vacuum=10.0, n_layers=5):
-        surf = surface(structure, miller_indices, periodic=True, layers=n_layers, vacuum=vacuum)
+        surf = build_surface_slab(
+            structure,
+            miller_indices,
+            layers=n_layers,
+            repeat=(1, 1, 1),
+            vacuum=vacuum,
+            center_axis=None,
+        )
         surf.calc = self.calculator
         structure.calc = self.calculator
 
@@ -468,7 +474,7 @@ class BasicProperties:
         ax.set_xlim(segment_distances[0][0], segment_distances[-1][-1])
         fig.tight_layout()
 
-        fig_path = os.path.join(self.working_dir, f"{formula}_phonon_dispersion.png")
+        fig_path = self.path(f"{formula}_phonon_dispersion.png")
         fig.savefig(fig_path, dpi=300)
 
         return fig_path
@@ -508,9 +514,9 @@ class BasicProperties:
         return interstitial_energy - (perfect_energy * (len(structure) + 1) / len(structure))
 
     def relax_fire_bfgs(self, structure, fmax_fire=0.01, fmax_bfgs=0.001, logfile="default"):
-        dyn_fire = FIRE(structure, logfile=f"{self.working_dir}/{logfile}_fire_relax.log")
+        dyn_fire = FIRE(structure, logfile=self.path(f"{logfile}_fire_relax.log"))
         dyn_fire.run(fmax=fmax_fire)
-        dyn_bfgs = BFGS(structure, logfile=f"{self.working_dir}/{logfile}_bfgs_relax.log")
+        dyn_bfgs = BFGS(structure, logfile=self.path(f"{logfile}_bfgs_relax.log"))
         dyn_bfgs.run(fmax=fmax_bfgs)
         return structure
 
@@ -577,7 +583,7 @@ class BasicProperties:
             "inter_111_formation_energy": float(inter_111_formation_energy),
         }
 
-        output_path = os.path.join(self.working_dir, save_name)
+        output_path = self.path(save_name)
         with open(output_path, "w", encoding="utf-8") as file:
             json.dump(calculated_data, file, indent=4)
 
@@ -756,5 +762,5 @@ class BasicProperties:
         axes[1, 1].grid(True, linestyle="--", alpha=0.7)
 
         plt.tight_layout(rect=[0, 0, 1, 0.96])
-        output_path = os.path.join(self.working_dir, save_name)
+        output_path = self.path(save_name)
         fig.savefig(output_path, dpi=300, format="pdf")
