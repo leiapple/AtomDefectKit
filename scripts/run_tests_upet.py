@@ -1,4 +1,6 @@
-# 
+#
+
+import argparse
 
 from atomdefectkit.basic_properties import BasicProperties
 from atomdefectkit.neb import BCCScrewDislocPeierlsBarrier
@@ -7,11 +9,18 @@ import numpy as np
 
 from ase.build import bulk
 
+
+parser = argparse.ArgumentParser(description="Run the UPET BCC defect workflow for one element.")
+parser.add_argument("--element", default="Nb", help="Chemical element symbol.")
+parser.add_argument("--initial-a0", type=float, default=3.3, help="Initial BCC lattice-parameter guess in Angstrom.")
+parser.add_argument("--working-dir", default=None, help="Output directory. Defaults to Test_<element>_upet.")
+args = parser.parse_args()
+
 # Define the benchmark material and output location.
-elem = 'Nb'
+elem = args.element
 crystal_structure = 'bcc'
-initial_a0 = 3.3  # Initial lattice-parameter guess in Angstrom.
-working_dir = 'Test_Nb_upet'
+initial_a0 = args.initial_a0
+working_dir = args.working_dir or f'Test_{elem}_upet'
 
 # Initialize the workflow with the UPET calculator backend.
 workflow = BasicProperties(
@@ -105,7 +114,7 @@ fig_path = workflow.calculate_phonon_dispersion(
 # Calculate stacking fault energy curve
 SF = workflow.create_stacking_fault_workflow(
     atoms=atoms.copy(),
-    formula="Nb",
+    formula=elem,
     info="UPET",
     optimizer="FIRE",
     working_dir=f'{working_dir}/stacking_fault',
