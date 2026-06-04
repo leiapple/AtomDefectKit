@@ -1,6 +1,8 @@
 """BCC screw dislocation setup and analysis tools."""
 
 from __future__ import annotations
+import os
+
 import matplotlib.pyplot as plt
 import numpy as np
 from ase.build import bulk
@@ -53,7 +55,26 @@ class BCCScrewDislocation(WorkingDirectoryMixin):
             shiftscale=True,
         )
 
-    def relax_dislocation_dipole(self, dislocation, disloc_center=(0, 0, 0), fmax=0.01, optimizer="BFGS"):
+    def relax_dislocation_dipole(
+        self,
+        dislocation,
+        disloc_center=(0, 0, 0),
+        fmax=0.01,
+        optimizer="BFGS",
+        logfile=None,
+    ):
+        """Build and relax a screw-dislocation dipole.
+
+        Args:
+            dislocation: Atomman dislocation object used to construct the dipole.
+            disloc_center: Dislocation center passed to ``dislocation.dipole``.
+            fmax: Force convergence threshold.
+            optimizer: ASE optimizer label.
+            logfile: Optional optimizer logfile saved under ``working_dir``.
+
+        Returns:
+            tuple: Base atomman system and relaxed dislocation atomman system.
+        """
         base_system, dislocation_system = dislocation.dipole(
             sizemults=[7, 5.5, 1],
             center=disloc_center,
@@ -66,7 +87,11 @@ class BCCScrewDislocation(WorkingDirectoryMixin):
         dislocation_dipole_ase.calc = self.calculator
 
         optimizer_name = normalize_optimizer_name(optimizer)
-        opt = build_optimizer(dislocation_dipole_ase, optimizer_name)
+        if logfile is None:
+            logfile = f"{optimizer_name.lower()}_dislocation_dipole_relax.log"
+        logfile = self.path(logfile)
+        os.makedirs(os.path.dirname(logfile) or ".", exist_ok=True)
+        opt = build_optimizer(dislocation_dipole_ase, optimizer_name, logfile=logfile)
         opt.run(fmax=fmax)
         relaxed_system = am.load("ase_Atoms", dislocation_dipole_ase, prop=properties)
         return base_system, relaxed_system

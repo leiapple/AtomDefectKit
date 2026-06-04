@@ -9,6 +9,8 @@ import numpy as np
 
 from ase.build import bulk
 
+from progress import progress
+
 
 parser = argparse.ArgumentParser(description="Run the MACE BCC defect workflow for one element.")
 parser.add_argument("--element", default="Nb", help="Chemical element symbol.")
@@ -23,6 +25,8 @@ initial_a0 = args.initial_a0
 working_dir = args.working_dir or f'Test_{elem}_mace'
 
 # Initialize the workflow with the MACE calculator backend.
+progress(f"Starting MACE workflow for {elem} with initial a0={initial_a0} A")
+progress("Loading MACE calculator")
 workflow = BasicProperties(
     model_name="mace",
     model_parameters={
@@ -33,13 +37,19 @@ workflow = BasicProperties(
     working_dir=working_dir,
 )
 calc = workflow.get_calculator()
+progress("MACE calculator loaded")
 
 # Build the conventional cubic BCC unit cell.
+progress("Building BCC unit cell")
 atoms = bulk(elem, crystal_structure, a=initial_a0, cubic=True)
 
 # Estimate the equilibrium lattice parameter from both relaxation and EOS fitting.
+progress("Relaxing lattice constant")
 a0_relax = workflow.calculate_equilibrium_a0_relax(atoms.copy(), fmax=0.001)
+progress(f"Relaxed lattice constant: {a0_relax:.6f} A")
+progress("Fitting Birch-Murnaghan EOS")
 volumes, energies, a0_fit = workflow.calculate_equilibrium_a0_birch_murnaghan(atoms.copy(), vol_range=np.linspace(0.95, 1.05, 40))
+progress(f"EOS lattice constant: {a0_fit:.6f} A")
 
 # Sanity-check that the two lattice-parameter estimates agree.
 if abs(a0_relax - a0_fit) > 1e-4:
@@ -48,10 +58,13 @@ if abs(a0_relax - a0_fit) > 1e-4:
 
 # Update the bulk cell before computing defect and surface properties.
 atoms.set_cell([a0_fit] * 3, scale_atoms=True)
+progress("Calculating elastic constants")
 Cij = workflow.calculate_elastic_constants(atoms.copy(), verbose=False)
+progress("Calculating vacancy formation energy")
 vacancy_formation_energy = workflow.calculate_vacancy_formation_energy(atoms)
 
 # Evaluate representative interstitial and vacancy formation energies.
+progress("Calculating interstitial formation energies")
 octahedral_formation_energy = workflow.calculate_interstitial_formation_energy(atoms.copy(), 
                                                                                elem, 
                                                                                a0_fit * np.array([0.5, 0.5, 0]))
@@ -70,11 +83,14 @@ inter_111_formation_energy = workflow.calculate_interstitial_formation_energy(at
                                                                               dumbbell=True)
 
 # Calculate surface energies for a small benchmark set of facets.
+progress("Calculating surface energies")
 surface_energy = np.zeros(4)
 miller_indices_list = [(1, 0, 0), (1, 1, 0), (1, 1, 1), (1, 1, 2)]
 for i, miller_indices in enumerate(miller_indices_list):
+    progress(f"Calculating surface energy for {miller_indices}")
     surface_energy[i] = workflow.calculate_surface_energy(atoms, miller_indices, vacuum=20, n_layers=8)
 
+progress("Saving basic properties")
 workflow.save_properties(
     volumes=volumes,
     energies=energies,
@@ -90,9 +106,11 @@ workflow.save_properties(
 )
 
 # Plot the calculated properties against the stored DFT reference data.
+progress("Plotting basic-property comparison")
 workflow.plot_comparison(f"{working_dir}/{elem}_basicProp.json", f'../data/basic_properties/dft_{elem}.json')
 
 # calculate phonon dispersion
+progress("Calculating phonon dispersion")
 special_points = {
     "G": (0.0, 0.0, 0.0),
     "H": (0.5, -0.5, 0.5),
@@ -110,6 +128,7 @@ fig_path = workflow.calculate_phonon_dispersion(
 )
 
 # Calculate stacking fault energy curve
+progress("Creating stacking-fault workflow")
 SF = workflow.create_stacking_fault_workflow(
     atoms=atoms.copy(),
     formula=elem,
@@ -119,6 +138,7 @@ SF = workflow.create_stacking_fault_workflow(
 )
 
 # (110) plane
+progress("Running stacking fault calculation for (110)")
 SF.stacking_fault(
     a=(1, 1, -1),
     b=(1, 1, 2),
@@ -132,6 +152,7 @@ SF.stacking_fault(
 )
 
 # (112) plane
+progress("Running stacking fault calculation for (112)")
 SF.stacking_fault(
     a=(1, 1, -1),
     b=(-1, 1, 0),
@@ -145,6 +166,7 @@ SF.stacking_fault(
 )
 
 # Traction separation (100)
+progress("Running traction separation for (100)")
 TS_100 = workflow.create_traction_separation_workflow(
     atoms=atoms,
     surface_index=(1, 0, 0),
@@ -159,6 +181,7 @@ results = TS_100.run_pure_separation(
 TS_100.plot_pure_separation(results)
 
 # Traction separation (110)
+progress("Running traction separation for (110)")
 TS_110 = workflow.create_traction_separation_workflow(
     atoms=atoms,
     surface_index=(1, 1, 0),
@@ -173,6 +196,7 @@ results = TS_110.run_pure_separation(
 TS_110.plot_pure_separation(results)
 
 # screw dislocation
+progress("Creating screw-dislocation workflow")
 dislocation_system = workflow.create_screw_dislocation_workflow(
     element=elem,
     lattice_constant=a0_fit,
@@ -182,17 +206,20 @@ dislocation_system = workflow.create_screw_dislocation_workflow(
 
 bcc_disl_init = dislocation_system.create_dislocation_object()
 # Relax the initial dislocation dipole configuration.
+progress("Relaxing initial screw-dislocation dipole")
 base_system_init, disl_system_init = dislocation_system.relax_dislocation_dipole(
                                             bcc_disl_init, 
                                             disloc_center=[0, 0, 0], 
                                             fmax=0.005, 
-                                            optimizer='FIRE'
+                                            optimizer='FIRE',
+                                            logfile="initial_fire_dislocation_relax.log",
                                             )
 
 # Convert the relaxed atomman system to ASE for downstream workflows.
 
 dislocation_dipole_ase_initial, properties = disl_system_init.dump('ase_Atoms', return_prop=True)
 # Save the differential-displacement map for the initial core location.
+progress("Plotting initial differential-displacement map")
 dislocation_system.plot_differential_displacement_map(bcc_disl_init, 
                                                       base_system_init, 
                                                       disl_system_init                                                      
@@ -201,20 +228,24 @@ dislocation_system.plot_differential_displacement_map(bcc_disl_init,
 # Repeat for the displaced final-state core configuration.
 bcc_disl_final = dislocation_system.create_dislocation_object()
 
+progress("Relaxing final screw-dislocation dipole")
 base_system_final, disl_system_final = dislocation_system.relax_dislocation_dipole(
                                             bcc_disl_final, 
                                             disloc_center=[a0_fit*np.sqrt(6)/3, 0, 0], 
                                             fmax=0.005, 
-                                            optimizer='FIRE'
+                                            optimizer='FIRE',
+                                            logfile="final_fire_dislocation_relax.log",
                                             )
 dislocation_dipole_ase_final, properties = disl_system_final.dump('ase_Atoms', return_prop=True)
 
 # Save the differential-displacement map for the final core location.
+progress("Plotting final differential-displacement map")
 dislocation_system.plot_differential_displacement_map(bcc_disl_final, 
                                                       base_system_final, 
                                                       disl_system_final, 
                                                       )
 
+progress("Running screw-dislocation NEB")
 bcc_screw_neb = BCCScrewDislocPeierlsBarrier(dislocation_dipole_ase_initial, 
                                              dislocation_dipole_ase_final, 
                                              calc, model_name='MACE-OMAT', 
@@ -224,3 +255,4 @@ bcc_screw_neb = BCCScrewDislocPeierlsBarrier(dislocation_dipole_ase_initial,
 bcc_screw_neb.relax_initial_final()
 bcc_screw_neb.run_neb(fmax=0.005, spring_constant=0.1)
 bcc_screw_neb.plot_barrier(element=f'{elem}', compare_vasp=False)
+progress("MACE workflow complete")
