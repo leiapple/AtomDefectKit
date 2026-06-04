@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 import os
+import warnings
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -20,7 +21,15 @@ class BCCScrewDislocation(WorkingDirectoryMixin):
     def __init__(self, element, lattice_constant, elastic_constant, calculator, working_dir='.'):
         self.element = element
         self.a0 = lattice_constant
-        self.cij = elastic_constant
+        self.cij = np.array(elastic_constant, dtype=float, copy=True)
+        if self.cij[3, 3] < 0.0:
+            warnings.warn(
+                f"Calculated C_44={self.cij[3, 3]:.6g} GPa is negative; "
+                "setting C_44 to 0.001 GPa for screw-dislocation setup.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+            self.cij[3, 3] = 0.001
         self.calculator = calculator
         self.structure = None
         self.relaxed_structure = None
