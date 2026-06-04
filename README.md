@@ -106,6 +106,19 @@ export TORCH_HOME=$SCRATCH/torch
 export MPLCONFIGDIR=$SCRATCH/matplotlib
 ```
 
+The repository includes a SLURM template for model test workflows:
+
+```bash
+# Five-element UPET run: V, Nb, Ta, Mo, W
+sbatch --export=ALL,MODEL=upet,RUN_MODE=bcc_elements scripts/slurm_run_model_test.sh
+
+# Single-element MACE run
+sbatch --export=ALL,MODEL=mace,RUN_MODE=single,ELEMENT=V,INITIAL_A0=2.997 scripts/slurm_run_model_test.sh
+```
+
+Set `PROJECT_DIR=/path/to/AtomDefectKit` in `--export` if you submit the job
+from outside the repository.
+
 Load a model calculator:
 
 ```python

@@ -35,7 +35,7 @@ workflow = BasicProperties(
         "model_version": "latest",
         "checkpoint_path": None,
     },
-    device="cpu",
+    device="cuda",
     working_dir=working_dir,
 )
 calc = workflow.get_calculator()

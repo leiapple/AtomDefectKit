@@ -33,7 +33,7 @@ workflow = BasicProperties(
         "model_task": "omat_pbe",
         "default_dtype": "float64",
     },
-    device="cpu",
+    device="cuda",
     working_dir=working_dir,
 )
 calc = workflow.get_calculator()

@@ -24,7 +24,7 @@ workflow = BasicProperties(
         "model_name": "7net-omni",
         "model_task": "omat24",
     },
-    device="cpu",
+    device="cuda",
     working_dir=working_dir,
 )
 calc = workflow.get_calculator()
