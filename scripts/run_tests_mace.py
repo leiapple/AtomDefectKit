@@ -17,8 +17,8 @@ working_dir = 'Test_Nb_mace'
 workflow = BasicProperties(
     model_name="mace",
     model_parameters={
-        "model_path": "small",
         "model_task": "omat_pbe",
+        "default_dtype": "float64",
     },
     device="cpu",
     working_dir=working_dir,

@@ -15,7 +15,7 @@ from ase.filters import StrainFilter
 from ase.optimize import BFGS, FIRE
 
 from matscipy.elasticity import fit_elastic_constants
-from scipy.optimize import leastsq
+from scipy.optimize import least_squares
 
 from atomdefectkit.model_discovery import discover_models
 from atomdefectkit.model_errors import (
@@ -252,16 +252,25 @@ class BasicProperties(WorkingDirectoryMixin):
     def fit_birch_murnaghan(self, volumes, energies):
         a, b, c = np.polyfit(volumes, energies, 2)
         V0 = -b / (2 * a)
+        if not np.isfinite(V0) or V0 <= 0:
+            V0 = volumes[np.argmin(energies)]
         E0 = a * V0**2 + b * V0 + c
-        B0 = 2 * a * V0
+        B0 = max(abs(2 * a * V0), 1e-8)
         Bp = 4.0
         x0 = [E0, B0, Bp, V0]
+        lower = [-np.inf, 1e-12, 0.0, min(volumes) * 0.5]
+        upper = [np.inf, np.inf, 20.0, max(volumes) * 1.5]
 
         def residual(params, vol, energy):
             return energy - self.birch_murnaghan_eos(params, vol)
 
-        params, _ = leastsq(residual, x0, args=(volumes, energies))
-        return params
+        result = least_squares(
+            residual,
+            x0,
+            bounds=(lower, upper),
+            args=(volumes, energies),
+        )
+        return result.x
 
     def calculate_equilibrium_a0_birch_murnaghan(
         self, atoms, vol_range=np.linspace(0.99, 1.01, 30)
@@ -271,7 +280,7 @@ class BasicProperties(WorkingDirectoryMixin):
         energies = []
         for scale in vol_range:
             atoms_scaled = atoms.copy()
-            atoms_scaled.set_cell(atoms.cell * scale**3, scale_atoms=True)
+            atoms_scaled.set_cell(atoms.cell * scale, scale_atoms=True)
             atoms_scaled.calc = self.calculator
             volumes.append(atoms_scaled.get_volume())
             energies.append(atoms_scaled.get_potential_energy())

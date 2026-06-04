@@ -26,6 +26,12 @@ from atomdefectkit.registry import register_model
             "description": "Task head used by the model (depend on the provided model file, see https://github.com/acesuit/mace#pretrained-foundation-models).",
             "default": "omat_pbe",
         },
+        "default_dtype": {
+            "type": "str",
+            "choices": ["float32", "float64"],
+            "description": "Default torch dtype used by MACE. Use float64 for geometry optimization.",
+            "default": "float64",
+        },
     },
 )
 def _build(params, device):
@@ -39,4 +45,5 @@ def _build(params, device):
         ),
         head=params.get("model_task", "default"),
         device=device,
+        default_dtype=params.get("default_dtype", "float64"),
     )
