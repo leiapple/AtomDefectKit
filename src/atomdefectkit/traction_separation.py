@@ -18,6 +18,13 @@ from atomdefectkit.utils.plotting import plot_xy_curves
 from atomdefectkit.utils.slabs import build_repeated_slab, build_surface_slab
 
 
+def _integrate_trapezoid(y, x):
+    """Integrate with the NumPy 2.x name while keeping old NumPy compatibility."""
+    if hasattr(np, "trapezoid"):
+        return np.trapezoid(y, x)
+    return np.trapz(y, x)
+
+
 @dataclass
 class TractionSeparationCurve:
     """Container for cohesive traction-separation relations."""
@@ -413,7 +420,7 @@ class TractionSeparationWorkflow(WorkingDirectoryMixin):
             "midpoint_separation": mid_seps,
             "traction": tractions,
             "curve": TractionSeparationCurve.from_arrays(seps, energies, area=float(np.mean(areas))),
-            "surface_energy_J_m2": float(np.trapz(tractions, mid_seps) * 0.1 / 2.0),
+            "surface_energy_J_m2": float(_integrate_trapezoid(tractions, mid_seps) * 0.1 / 2.0),
             "sigma_max_GPa": float(np.max(tractions)),
         }
 
@@ -504,7 +511,7 @@ class TractionSeparationWorkflow(WorkingDirectoryMixin):
             theta = nH_surf / Nmax_surface
             theta_eff[nH] = theta
 
-            area_GPa_A = np.trapz(mean_y, x)
+            area_GPa_A = _integrate_trapezoid(mean_y, x)
             gamma_data[nH] = area_GPa_A * 0.1 / 2.0
             sigma_max[nH] = mean_y.max()
 

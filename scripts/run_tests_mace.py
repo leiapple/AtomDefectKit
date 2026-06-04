@@ -1,4 +1,6 @@
-# 
+#
+
+import argparse
 
 from atomdefectkit.basic_properties import BasicProperties
 from atomdefectkit.neb import BCCScrewDislocPeierlsBarrier
@@ -7,11 +9,18 @@ import numpy as np
 
 from ase.build import bulk
 
+
+parser = argparse.ArgumentParser(description="Run the MACE BCC defect workflow for one element.")
+parser.add_argument("--element", default="Nb", help="Chemical element symbol.")
+parser.add_argument("--initial-a0", type=float, default=3.3, help="Initial BCC lattice-parameter guess in Angstrom.")
+parser.add_argument("--working-dir", default=None, help="Output directory. Defaults to Test_<element>_mace.")
+args = parser.parse_args()
+
 # Define the benchmark material and output location.
-elem = 'Nb'
+elem = args.element
 crystal_structure = 'bcc'
-initial_a0 = 3.3  # Initial lattice-parameter guess in Angstrom.
-working_dir = 'Test_Nb_mace'
+initial_a0 = args.initial_a0
+working_dir = args.working_dir or f'Test_{elem}_mace'
 
 # Initialize the workflow with the MACE calculator backend.
 workflow = BasicProperties(
@@ -103,7 +112,7 @@ fig_path = workflow.calculate_phonon_dispersion(
 # Calculate stacking fault energy curve
 SF = workflow.create_stacking_fault_workflow(
     atoms=atoms.copy(),
-    formula="Nb",
+    formula=elem,
     info="MACE",
     optimizer="FIRE",
     working_dir=f'{working_dir}/stacking_fault',
@@ -145,6 +154,7 @@ TS_100 = workflow.create_traction_separation_workflow(
 results = TS_100.run_pure_separation(
     vacuum_values=np.linspace(0.0, 4.0, 40),
     write_xyz=True,
+    cell_optimizer="FIRE",
 )
 TS_100.plot_pure_separation(results)
 
@@ -158,6 +168,7 @@ TS_110 = workflow.create_traction_separation_workflow(
 results = TS_110.run_pure_separation(
     vacuum_values=np.linspace(0.0, 4.0, 40),
     write_xyz=True,
+    cell_optimizer="FIRE",
 )
 TS_110.plot_pure_separation(results)
 
