@@ -1,17 +1,36 @@
 [project]
-name = "AtomDefectKit"
+name = "atomdefectkit"
 version = "0.1.0"
-description = "Add your description here"
+description = "Atomistic defect workflows and model-loader utilities for BCC metals."
 readme = "README.md"
 authors = [
     { name = "Lei Zhang", email = "lei.zhang9@tue.nl" }
+]
+maintainers = [
+    { name = "Lei Zhang", email = "lei.zhang9@tue.nl" }
+]
+license = "MIT"
+license-files = ["LICENSE"]
+keywords = [
+    "atomistic simulation",
+    "defects",
+    "bcc metals",
+    "machine-learned interatomic potentials",
+    "materials science",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Topic :: Scientific/Engineering :: Physics",
 ]
 
 requires-python = ">=3.11,<3.12"
 dependencies = [
     "atomman>=1.5.2",
-    "ipykernel>=7.2.0",
-    "jupyter>=1.1.1",
     "matscipy>=1.1,<2.0",
     "pandas>=2.2.3; extra != 'pace'",
     "phonopy>=4.1.0",
@@ -36,6 +55,19 @@ chgnet = ["chgnet", "pandas>=2.2.3"]
 
 [project.scripts]
 atomdefectkit = "atomdefectkit:main"
+
+[project.urls]
+Homepage = "https://github.com/leiapple/AtomDefectKit"
+Repository = "https://github.com/leiapple/AtomDefectKit"
+Issues = "https://github.com/leiapple/AtomDefectKit/issues"
+
+[dependency-groups]
+dev = [
+    "ipykernel>=7.2.0",
+    "jupyter>=1.1.1",
+    "pytest>=8.0",
+    "ruff>=0.8",
+]
 
 [build-system]
 requires = ["uv_build>=0.11.7,<0.12.0"]
@@ -62,3 +94,7 @@ maxvolpy = ["numpy<1.24", "setuptools<60", "Cython<3"]
 
 [tool.uv.extra-build-variables]
 maxvolpy = { SETUPTOOLS_USE_DISTUTILS = "stdlib" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

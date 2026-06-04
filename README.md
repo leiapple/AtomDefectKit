@@ -39,6 +39,12 @@ Install the base environment with:
 uv sync
 ```
 
+When installed from PyPI, the equivalent base install will be:
+
+```bash
+pip install atomdefectkit
+```
+
 Each MLIP backend is exposed as an optional dependency extra. These extras are intentionally marked as mutually exclusive because the upstream model stacks often require incompatible versions of NumPy, PyTorch, TensorFlow, JAX, or CUDA helper packages. Sync one model backend at a time:
 
 ```bash
@@ -58,11 +64,27 @@ uv sync --extra grace
 uv run --extra grace python scripts/run_tests_grace.py
 ```
 
+From PyPI, install one backend extra in a fresh environment:
+
+```bash
+pip install "atomdefectkit[fairchem]"
+pip install "atomdefectkit[mace]"
+pip install "atomdefectkit[upet]"
+```
+
 For PACE-backed workflows, sync the PACE extra:
 
 ```bash
 uv sync --extra pace
 uv run --extra pace python scripts/run_tests_pace.py
+```
+
+If you run `uv` from outside the repository, `--extra` has no effect unless you point `uv` at this project. Use `--project` with the path to the cloned repository:
+
+```bash
+uv sync --project /path/to/AtomDefectKit --extra upet
+uv run --project /path/to/AtomDefectKit --extra upet python /path/to/AtomDefectKit/scripts/run_tests_upet.py
+uv run --project /path/to/AtomDefectKit --extra upet python /path/to/AtomDefectKit/scripts/run_tests_upet_bcc_elements.py
 ```
 
 If you want to keep separate persistent virtual environments for different models, set `UV_PROJECT_ENVIRONMENT` per backend:
@@ -117,6 +139,22 @@ import atomdefectkit
 
 print(atomdefectkit.available_models())
 print(atomdefectkit.available_model_metadata())
+```
+
+### Release checklist
+
+Before publishing to PyPI, run the lightweight checks:
+
+```bash
+uv lock --check
+uv run --group dev pytest
+uv build --no-sources
+```
+
+Publish releases from a clean tagged commit. PyPI Trusted Publishing through GitHub Actions is preferred; for a manual upload with uv, use:
+
+```bash
+uv publish
 ```
 
 ### Notes

@@ -17,7 +17,7 @@ def main():
     runner = script_dir / "run_tests_upet.py"
 
     for element, initial_a0 in ELEMENT_A0:
-        working_dir = f"Test_{element}_upet"
+        working_dir = script_dir / f"Test_{element}_upet"
         print(f"Running UPET workflow for {element} with initial a0={initial_a0} A")
         subprocess.run(
             [
@@ -28,7 +28,7 @@ def main():
                 "--initial-a0",
                 str(initial_a0),
                 "--working-dir",
-                working_dir,
+                str(working_dir),
             ],
             cwd=script_dir,
             check=True,

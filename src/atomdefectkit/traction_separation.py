@@ -8,7 +8,6 @@ from dataclasses import dataclass
 from ase import Atom, Atoms
 from ase.filters import UnitCellFilter
 from ase.io import write
-from ase.optimize.sciopt import SciPyFminCG
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 import matplotlib.cm as cm
@@ -92,10 +91,10 @@ class TractionSeparationWorkflow(WorkingDirectoryMixin):
             repeat: Supercell repetition counts along the three slab directions.
             working_dir: Directory where trajectories, logs, text files, and plots are saved.
             optimizer: Geometry optimizer label. Supported values are ``FIRE``,
-                ``BFGS``, and ``LBFGS``.
+                ``BFGS``, ``LBFGS``, and ``SciPyFminCG``.
 
         Raises:
-            ValueError: If ``optimizer`` is not one of the supported names.
+            ValueError: If an optimizer is not one of the supported names.
         """
         self.atoms = atoms
         self.calc = calculator
@@ -260,7 +259,16 @@ class TractionSeparationWorkflow(WorkingDirectoryMixin):
                 nH_top += 1
         return nH_top, nH_bottom
 
-    def relax_base_structure(self, atoms, nH, fmax_cell=1e-3, fmax_atoms=1e-2, steps=200000):
+    def relax_base_structure(
+        self,
+        atoms,
+        nH,
+        fmax_cell=1e-3,
+        fmax_atoms=1e-2,
+        steps=200000,
+        optimizer=None,
+        cell_optimizer="SciPyFminCG",
+    ):
         """Run the two-stage relaxation used before opening traction-separation gaps.
 
         Args:
@@ -269,18 +277,30 @@ class TractionSeparationWorkflow(WorkingDirectoryMixin):
             fmax_cell: Force threshold for the cell relaxation stage.
             fmax_atoms: Force threshold for the atomic relaxation stage.
             steps: Maximum steps for each optimizer.
+            optimizer: Optional atomic optimizer label for this relaxation call.
+            cell_optimizer: Optional ``UnitCellFilter`` optimizer label for this
+                relaxation call.
 
         Returns:
             ase.Atoms: Relaxed slab.
         """
+        optimizer = normalize_optimizer_name(optimizer or self.optimizer)
+        cell_optimizer = normalize_optimizer_name(cell_optimizer)
+
         atoms.calc = self.calc
         ucf = UnitCellFilter(atoms)
-        opt = SciPyFminCG(ucf, logfile=self.path(f"box_relax_H{nH}.log"))
+
+        cell_logfile = self.path(f"{cell_optimizer.lower()}_box_relax_H{nH}.log")
+        os.makedirs(os.path.dirname(cell_logfile) or ".", exist_ok=True)
+        opt = build_optimizer(ucf, cell_optimizer, logfile=cell_logfile)
         opt.run(fmax=fmax_cell, steps=steps)
+
+        atom_logfile = self.path(f"{optimizer.lower()}_relax_H{nH}.log")
+        os.makedirs(os.path.dirname(atom_logfile) or ".", exist_ok=True)
         opt2 = build_optimizer(
             atoms,
-            self.optimizer,
-            logfile=self.path(f"{self.optimizer.lower()}_relax_H{nH}.log"),
+            optimizer,
+            logfile=atom_logfile,
         )
         opt2.run(fmax=fmax_atoms, steps=steps)
         atoms.set_constraint()
@@ -350,19 +370,32 @@ class TractionSeparationWorkflow(WorkingDirectoryMixin):
 
         return np.array(seps), np.array(energies), np.array(areas)
 
-    def run_pure_separation(self, vacuum_values, write_xyz=True):
+    def run_pure_separation(
+        self,
+        vacuum_values,
+        write_xyz=True,
+        optimizer=None,
+        cell_optimizer="SciPyFminCG",
+    ):
         """Run a traction-separation calculation for the pure metal slab.
 
         Args:
             vacuum_values: Separation distances used to open the cleavage gap.
             write_xyz: Whether to save an ``extxyz`` trajectory for the scan.
+            optimizer: Optional atomic optimizer label for the base relaxation.
+            cell_optimizer: ``UnitCellFilter`` optimizer label for the base relaxation.
 
         Returns:
             dict: Separation distances, energies, areas, midpoint tractions,
             and derived cohesive metrics for the pure slab.
         """
         slab = self.build_bcc_slab()
-        base = self.relax_base_structure(slab, nH=0)
+        base = self.relax_base_structure(
+            slab,
+            nH=0,
+            optimizer=optimizer,
+            cell_optimizer=cell_optimizer,
+        )
         seps, energies, areas = self._scan_separation_curve(
             base,
             label="pure",
@@ -391,6 +424,8 @@ class TractionSeparationWorkflow(WorkingDirectoryMixin):
         eps=1e-3,
         z_tol=1.6,
         write_xyz=True,
+        optimizer=None,
+        cell_optimizer="SciPyFminCG",
     ):
         """Run traction-separation scans across a list of H coverages.
 
@@ -400,6 +435,8 @@ class TractionSeparationWorkflow(WorkingDirectoryMixin):
             eps: Small z offset used when generating adsorption sites.
             z_tol: Distance cutoff used when counting surface H atoms.
             write_xyz: Whether to save an ``extxyz`` trajectory for each coverage.
+            optimizer: Optional atomic optimizer label for each base relaxation.
+            cell_optimizer: ``UnitCellFilter`` optimizer label for each base relaxation.
 
         Returns:
             dict: Raw TS curves, averaged metrics, effective coverage values,
@@ -417,7 +454,12 @@ class TractionSeparationWorkflow(WorkingDirectoryMixin):
 
         for nH in nH_list:
             base = self.add_hydrogen_sites(slab, nH, top_sites, bot_sites)
-            base = self.relax_base_structure(base, nH=nH)
+            base = self.relax_base_structure(
+                base,
+                nH=nH,
+                optimizer=optimizer,
+                cell_optimizer=cell_optimizer,
+            )
             seps_arr, eners_arr, areas_arr = self._scan_separation_curve(
                 base,
                 label=f"H{nH}",

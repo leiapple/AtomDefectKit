@@ -156,6 +156,7 @@ TS_100 = workflow.create_traction_separation_workflow(
 results = TS_100.run_pure_separation(
     vacuum_values=np.linspace(0.0, 4.0, 40),
     write_xyz=True,
+    cell_optimizer="FIRE",
 )
 TS_100.plot_pure_separation(results)
 
@@ -169,6 +170,7 @@ TS_110 = workflow.create_traction_separation_workflow(
 results = TS_110.run_pure_separation(
     vacuum_values=np.linspace(0.0, 4.0, 40),
     write_xyz=True,
+    cell_optimizer="FIRE",
 )
 TS_110.plot_pure_separation(results)
 

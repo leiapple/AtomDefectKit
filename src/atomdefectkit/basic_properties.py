@@ -283,7 +283,9 @@ class BasicProperties(WorkingDirectoryMixin):
     def calculate_equilibrium_a0_relax(self, atoms, fmax=0.01):
         atoms.calc = self.calculator
         sf = StrainFilter(atoms, mask=[True, True, True, False, False, False])
-        dyn = BFGS(sf, logfile=self.path("relax_box.log"))
+        logfile = self.path("relax_box.log")
+        os.makedirs(os.path.dirname(logfile) or ".", exist_ok=True)
+        dyn = BFGS(sf, logfile=logfile)
         dyn.run(fmax=fmax)
         return atoms.cell.cellpar()[0]
 
@@ -514,9 +516,13 @@ class BasicProperties(WorkingDirectoryMixin):
         return interstitial_energy - (perfect_energy * (len(structure) + 1) / len(structure))
 
     def relax_fire_bfgs(self, structure, fmax_fire=0.01, fmax_bfgs=0.001, logfile="default"):
-        dyn_fire = FIRE(structure, logfile=self.path(f"{logfile}_fire_relax.log"))
+        fire_logfile = self.path(f"{logfile}_fire_relax.log")
+        bfgs_logfile = self.path(f"{logfile}_bfgs_relax.log")
+        os.makedirs(os.path.dirname(fire_logfile) or ".", exist_ok=True)
+        os.makedirs(os.path.dirname(bfgs_logfile) or ".", exist_ok=True)
+        dyn_fire = FIRE(structure, logfile=fire_logfile)
         dyn_fire.run(fmax=fmax_fire)
-        dyn_bfgs = BFGS(structure, logfile=self.path(f"{logfile}_bfgs_relax.log"))
+        dyn_bfgs = BFGS(structure, logfile=bfgs_logfile)
         dyn_bfgs.run(fmax=fmax_bfgs)
         return structure
 
