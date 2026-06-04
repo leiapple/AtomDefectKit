@@ -12,17 +12,27 @@ dependencies = [
     "atomman>=1.5.2",
     "ipykernel>=7.2.0",
     "jupyter>=1.1.1",
-    "matscipy>=1.1,<1.2",
+    "matscipy>=1.1,<2.0",
+    "pandas>=2.2.3; extra != 'pace'",
     "phonopy>=4.1.0",
+    "scikit-learn>=1.4.2",
     "spglib>=2.7.0",
-    "tensorpotential>=0.5.9",
 ]
 
 [project.optional-dependencies]
-ace = [
+pace = [
     "setuptools<81",
     "pyace @ git+https://github.com/ICAMS/python-ace.git",
 ]
+grace = ["tensorpotential>=0.5.9", "pandas>=2.2.3"]
+fairchem = ["fairchem-core>=2.3,<3.0", "pandas>=2.2.3"]
+mace = ["mace-torch", "cuequivariance", "cuequivariance-torch", "pandas>=2.2.3"]
+mattersim = ["mattersim", "pandas>=2.2.3"]
+7net = ["sevenn", "pandas>=2.2.3"]
+nequip = ["nequip", "pandas>=2.2.3"]
+nequix = ["nequix", "pandas>=2.2.3"]
+upet = ["upet", "pandas>=2.2.3"]
+chgnet = ["chgnet", "pandas>=2.2.3"]
 
 [project.scripts]
 atomdefectkit = "atomdefectkit:main"
@@ -30,3 +40,25 @@ atomdefectkit = "atomdefectkit:main"
 [build-system]
 requires = ["uv_build>=0.11.7,<0.12.0"]
 build-backend = "uv_build"
+
+[tool.uv]
+conflicts = [
+    [
+        { extra = "7net" },
+        { extra = "chgnet" },
+        { extra = "fairchem" },
+        { extra = "grace" },
+        { extra = "mace" },
+        { extra = "mattersim" },
+        { extra = "nequip" },
+        { extra = "nequix" },
+        { extra = "pace" },
+        { extra = "upet" },
+    ],
+]
+
+[tool.uv.extra-build-dependencies]
+maxvolpy = ["numpy<1.24", "setuptools<60", "Cython<3"]
+
+[tool.uv.extra-build-variables]
+maxvolpy = { SETUPTOOLS_USE_DISTUTILS = "stdlib" }

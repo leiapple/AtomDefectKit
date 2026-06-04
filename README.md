@@ -6,7 +6,7 @@
 
 Current migrated components:
 
-- basic ACE-backed property and point-defect calculations
+- basic PACE-backed property and point-defect calculations
 - model loading through a registry-based `models/` package
 - screw dislocation setup and DD-map workflows
 - NEB-based Peierls barrier workflow
@@ -20,30 +20,43 @@ AtomDefectKit/
 
 ```
 
-### ACE calculator note
+### PACE calculator note
 
-The PyPI package named `pyace` is not the atomistic ACE calculator used for BCC potentials here. It currently resolves to an unrelated music-processing package, so it is not installed as a default dependency for this project.
+The atomistic PACE calculator used for BCC potentials is available through the optional `pace` dependency group. It is installed from the upstream `ICAMS/python-ace` repository instead of the unrelated package that is published on PyPI as `pyace`.
 
-If you want to run ACE-backed workflows, install the correct ACE calculator package separately in this environment and then use the example scripts or future `ace` model loader support in `atomdefectkit`.
+If you want to run PACE-backed workflows, sync the optional dependency first:
+
+```bash
+uv sync --extra pace
+```
 
 Load a model calculator:
 
 ```python
 import atomdefectkit
+from atomdefectkit.basic_properties import BasicProperties
 
 calc = atomdefectkit.load_model(
-    "ace",
+    "pace",
     {"potential_file": "/path/to/potential.yaml"},
 )
-workflow = atomdefectkit.ACECalculations(calc)
+workflow = BasicProperties(calculator=calc)
 ```
 
 Available bundled model loaders currently include:
 
-- `ace`
-- `mace`
-- `grace`
+- `7net`
+- `chgnet`
 - `fairchem`
+- `grace`
+- `mace`
+- `mattersim`
+- `nequip`
+- `nequix`
+- `pace`
+- `upet`
+
+Model backend extras are resolved as mutually exclusive environments because the upstream MLIP stacks pin incompatible low-level packages. Install one backend extra at a time, for example `uv sync --extra mace`.
 
 Inspect available loaders programmatically:
 
