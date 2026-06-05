@@ -1,6 +1,11 @@
 Getting started
 ===============
 
+AtomDefectKit is built around reusable ASE-compatible workflows for defect and
+surface calculations in BCC metals. The package separates model loading from
+workflow logic, so the same workflow class can be driven by different MLIP
+backends.
+
 Installation
 ------------
 
@@ -45,6 +50,17 @@ Quick example
    )
    workflow = BasicProperties(calculator=calc)
 
+You can also initialize the workflow directly from a registered model name:
+
+.. code-block:: python
+
+   workflow = BasicProperties(
+       model_name="mace",
+       model_parameters={"model_task": "omat_pbe", "default_dtype": "float64"},
+       device="cuda",
+       working_dir="Test_V_mace",
+   )
+
 Available model loaders
 -----------------------
 
@@ -63,3 +79,6 @@ Notes
 The package bundles reference DFT JSON files used by
 ``BasicProperties.plot_comparison()``, so comparison plots work when the
 package is installed outside the source tree as well.
+
+For a broader description of supported installation patterns, see
+:doc:`installation`. For script-level usage patterns, see :doc:`examples`.

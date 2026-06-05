@@ -1,6 +1,9 @@
 API reference
 =============
 
+This section exposes the current Python API directly from the source modules.
+For higher-level usage guidance, see :doc:`workflows` and :doc:`examples`.
+
 Top-level package
 -----------------
 

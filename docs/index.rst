@@ -19,4 +19,8 @@ Contents
    :maxdepth: 2
 
    getting-started
+   installation
+   models
+   workflows
+   examples
    api
