@@ -16,11 +16,11 @@ ELEMENT_A0 = [
 
 def main():
     script_dir = Path(__file__).resolve().parent
-    runner = script_dir / "run_tests_upet.py"
+    runner = script_dir / "run_tests_grace.py"
 
     for element, initial_a0 in ELEMENT_A0:
-        working_dir = script_dir / f"Test_{element}_upet"
-        progress(f"Running UPET workflow for {element} with initial a0={initial_a0} A")
+        working_dir = script_dir / f"Test_{element}_grace"
+        progress(f"Running GRACE workflow for {element} with initial a0={initial_a0} A")
         subprocess.run(
             [
                 sys.executable,
@@ -35,7 +35,7 @@ def main():
             cwd=script_dir,
             check=True,
         )
-        progress(f"Finished UPET workflow for {element}")
+        progress(f"Finished GRACE workflow for {element}")
 
 
 if __name__ == "__main__":

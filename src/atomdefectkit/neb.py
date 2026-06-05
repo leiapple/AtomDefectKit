@@ -34,9 +34,13 @@ class BCCScrewDislocPeierlsBarrier(WorkingDirectoryMixin):
         self.init_working_dir(working_dir, "screw_disloc")
 
     def relax_initial_final(self, fmax=0.001, steps=10000):
-        for config in [self.initial_config, self.final_config]:
+        for label, config in [("initial", self.initial_config), ("final", self.final_config)]:
             config.calc = self.calc
-            opt = build_optimizer(FrechetCellFilter(config), self.optimizer)
+            opt = build_optimizer(
+                FrechetCellFilter(config),
+                self.optimizer,
+                logfile=self.path(f"{label}_{self.optimizer.lower()}_relax.log"),
+            )
             opt.run(fmax=fmax, steps=steps)
 
         E_diff = self.final_config.get_potential_energy() - self.initial_config.get_potential_energy()
@@ -91,6 +95,7 @@ class BCCScrewDislocPeierlsBarrier(WorkingDirectoryMixin):
         optimizer = build_optimizer(
             neb,
             self.optimizer,
+            logfile=self.path(f"neb_{self.optimizer.lower()}_relax.log"),
             trajectory=self.path("neb.traj"),
         )
         optimizer.run(fmax=fmax, steps=steps)

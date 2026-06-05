@@ -26,12 +26,16 @@ The atomistic PACE calculator used for BCC potentials is available through the o
 
 ### Managing model environments with uv
 
-This project uses `uv` for Python and dependency management. The package requires Python 3.11. If the system Python is not suitable, let `uv` install and pin Python:
+This project uses `uv` for Python and dependency management. The package supports Python 3.11, 3.12, and 3.13. If the system Python is not suitable, let `uv` install and pin Python:
 
 ```bash
 uv python install 3.11
 uv python pin 3.11
 ```
+
+The core package and most model backends can target Python 3.11-3.13. The
+optional `pace` extra currently depends on `pyace`, which should be treated as
+Python 3.11 only until its upstream packaging catches up.
 
 Install the base environment with:
 

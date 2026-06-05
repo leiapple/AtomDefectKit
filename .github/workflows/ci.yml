@@ -9,6 +9,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
 
     steps:
       - name: Check out repository
@@ -18,13 +22,14 @@ jobs:
         uses: astral-sh/setup-uv@v7
 
       - name: Install Python
-        run: uv python install 3.11
+        run: uv python install ${{ matrix.python-version }}
 
       - name: Check lockfile
         run: uv lock --check
 
       - name: Run tests
-        run: uv run --group dev pytest
+        run: uv run --python ${{ matrix.python-version }} --group dev pytest
 
       - name: Build package
+        if: matrix.python-version == '3.11'
         run: uv build --no-sources

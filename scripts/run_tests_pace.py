@@ -8,7 +8,7 @@ import numpy as np
 from ase.build import bulk
 from pyace import PyACECalculator
 
-from progress import progress
+from atomdefectkit.utils.progress import progress
 
 # Define the benchmark material and output location.
 elem = 'Nb'

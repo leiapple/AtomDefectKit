@@ -24,24 +24,25 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Chemistry",
     "Topic :: Scientific/Engineering :: Physics",
 ]
 
-requires-python = ">=3.11,<3.12"
+requires-python = ">=3.11,<3.14"
 dependencies = [
     "atomman>=1.5.2",
     "matscipy>=1.1,<2.0",
     "pandas>=2.2.3; extra != 'pace'",
     "phonopy>=4.1.0",
-    "scikit-learn>=1.4.2",
     "spglib>=2.7.0",
 ]
 
 [project.optional-dependencies]
 pace = [
-    "setuptools<81",
-    "pyace @ git+https://github.com/ICAMS/python-ace.git",
+    "setuptools<81; python_version == '3.11'",
+    "pyace @ git+https://github.com/ICAMS/python-ace.git ; python_version == '3.11'",
 ]
 grace = ["tensorpotential>=0.5.9", "pandas>=2.2.3"]
 fairchem = ["fairchem-core>=2.3,<3.0", "pandas>=2.2.3"]
@@ -98,3 +99,11 @@ maxvolpy = { SETUPTOOLS_USE_DISTUTILS = "stdlib" }
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra"
+filterwarnings = [
+    "ignore:'oneOf' deprecated - use 'one_of':DeprecationWarning:matplotlib\\._fontconfig_pattern",
+    "ignore:'parseString' deprecated - use 'parse_string':DeprecationWarning:matplotlib\\._fontconfig_pattern",
+    "ignore:'resetCache' deprecated - use 'reset_cache':DeprecationWarning:matplotlib\\._fontconfig_pattern",
+    "ignore:'enablePackrat' deprecated - use 'enable_packrat':DeprecationWarning:matplotlib\\._mathtext",
+    "ignore:read_text is deprecated\\. Use files\\(\\) instead\\.:DeprecationWarning:DataModelDict",
+    "ignore:open_text is deprecated\\. Use files\\(\\) instead\\.:DeprecationWarning:importlib\\.resources\\._legacy",
+]

@@ -9,7 +9,7 @@ import numpy as np
 
 from ase.build import bulk
 
-from progress import progress
+from atomdefectkit.utils.progress import progress
 
 
 parser = argparse.ArgumentParser(description="Run the MACE BCC defect workflow for one element.")

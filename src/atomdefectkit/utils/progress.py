@@ -1,4 +1,4 @@
-"""Small progress-printing helper for long example workflows."""
+"""Progress-printing helper for long example workflows."""
 
 from __future__ import annotations
 
