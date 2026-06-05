@@ -209,6 +209,23 @@ The package now bundles the reference DFT JSON files used by
 comparison plots even when they are launched from a different working directory
 or from outside the source tree.
 
+### Documentation
+
+The repository now includes a basic Read the Docs setup based on the v2
+configuration file format:
+
+- `.readthedocs.yaml`
+- `docs/conf.py`
+- `docs/index.rst`
+- `docs/getting-started.rst`
+- `docs/api.rst`
+
+To build the documentation locally:
+
+```bash
+uv run --with sphinx --with sphinx-rtd-theme sphinx-build -b html docs docs/_build/html
+```
+
 ### Release checklist
 
 Before publishing to PyPI, run the lightweight checks:

@@ -1,0 +1,1080 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API reference &mdash; AtomDefectKit 0.1.0</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=01f34227"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Getting started" href="getting-started.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            AtomDefectKit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting started</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-atomdefectkit">Top-level package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#atomdefectkit.available_models"><code class="docutils literal notranslate"><span class="pre">available_models()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#atomdefectkit.available_model_metadata"><code class="docutils literal notranslate"><span class="pre">available_model_metadata()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#atomdefectkit.load_model"><code class="docutils literal notranslate"><span class="pre">load_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#atomdefectkit.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-atomdefectkit.basic_properties">Core workflows</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#atomdefectkit.basic_properties.BasicProperties"><code class="docutils literal notranslate"><span class="pre">BasicProperties</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.basic_properties.BasicProperties.get_calculator"><code class="docutils literal notranslate"><span class="pre">BasicProperties.get_calculator()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.basic_properties.BasicProperties.create_stacking_fault_workflow"><code class="docutils literal notranslate"><span class="pre">BasicProperties.create_stacking_fault_workflow()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.basic_properties.BasicProperties.create_traction_separation_workflow"><code class="docutils literal notranslate"><span class="pre">BasicProperties.create_traction_separation_workflow()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.basic_properties.BasicProperties.create_screw_dislocation_workflow"><code class="docutils literal notranslate"><span class="pre">BasicProperties.create_screw_dislocation_workflow()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.basic_properties.BasicProperties.birch_murnaghan_eos"><code class="docutils literal notranslate"><span class="pre">BasicProperties.birch_murnaghan_eos()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.basic_properties.BasicProperties.fit_birch_murnaghan"><code class="docutils literal notranslate"><span class="pre">BasicProperties.fit_birch_murnaghan()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.basic_properties.BasicProperties.calculate_equilibrium_a0_birch_murnaghan"><code class="docutils literal notranslate"><span class="pre">BasicProperties.calculate_equilibrium_a0_birch_murnaghan()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.basic_properties.BasicProperties.calculate_equilibrium_a0_relax"><code class="docutils literal notranslate"><span class="pre">BasicProperties.calculate_equilibrium_a0_relax()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.basic_properties.BasicProperties.calculate_elastic_constants"><code class="docutils literal notranslate"><span class="pre">BasicProperties.calculate_elastic_constants()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.basic_properties.BasicProperties.calculate_surface_energy"><code class="docutils literal notranslate"><span class="pre">BasicProperties.calculate_surface_energy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.basic_properties.BasicProperties.calculate_phonon_dispersion"><code class="docutils literal notranslate"><span class="pre">BasicProperties.calculate_phonon_dispersion()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.basic_properties.BasicProperties.calculate_vacancy_formation_energy"><code class="docutils literal notranslate"><span class="pre">BasicProperties.calculate_vacancy_formation_energy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.basic_properties.BasicProperties.calculate_interstitial_formation_energy"><code class="docutils literal notranslate"><span class="pre">BasicProperties.calculate_interstitial_formation_energy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.basic_properties.BasicProperties.relax_fire_bfgs"><code class="docutils literal notranslate"><span class="pre">BasicProperties.relax_fire_bfgs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.basic_properties.BasicProperties.save_properties"><code class="docutils literal notranslate"><span class="pre">BasicProperties.save_properties()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.basic_properties.BasicProperties.plot_comparison"><code class="docutils literal notranslate"><span class="pre">BasicProperties.plot_comparison()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#atomdefectkit.screw.BCCScrewDislocation"><code class="docutils literal notranslate"><span class="pre">BCCScrewDislocation</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.screw.BCCScrewDislocation.validate_cubic_elastic_constants"><code class="docutils literal notranslate"><span class="pre">BCCScrewDislocation.validate_cubic_elastic_constants()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.screw.BCCScrewDislocation.create_dislocation_object"><code class="docutils literal notranslate"><span class="pre">BCCScrewDislocation.create_dislocation_object()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.screw.BCCScrewDislocation.relax_dislocation_dipole"><code class="docutils literal notranslate"><span class="pre">BCCScrewDislocation.relax_dislocation_dipole()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.screw.BCCScrewDislocation.plot_differential_displacement_map"><code class="docutils literal notranslate"><span class="pre">BCCScrewDislocation.plot_differential_displacement_map()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#atomdefectkit.neb.BCCScrewDislocPeierlsBarrier"><code class="docutils literal notranslate"><span class="pre">BCCScrewDislocPeierlsBarrier</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.neb.BCCScrewDislocPeierlsBarrier.relax_initial_final"><code class="docutils literal notranslate"><span class="pre">BCCScrewDislocPeierlsBarrier.relax_initial_final()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.neb.BCCScrewDislocPeierlsBarrier.run_neb"><code class="docutils literal notranslate"><span class="pre">BCCScrewDislocPeierlsBarrier.run_neb()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.neb.BCCScrewDislocPeierlsBarrier.plot_barrier"><code class="docutils literal notranslate"><span class="pre">BCCScrewDislocPeierlsBarrier.plot_barrier()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#atomdefectkit.stacking_fault.StackingFaultCurve"><code class="docutils literal notranslate"><span class="pre">StackingFaultCurve</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.stacking_fault.StackingFaultCurve.displacements"><code class="docutils literal notranslate"><span class="pre">StackingFaultCurve.displacements</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.stacking_fault.StackingFaultCurve.energies"><code class="docutils literal notranslate"><span class="pre">StackingFaultCurve.energies</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.stacking_fault.StackingFaultCurve.area"><code class="docutils literal notranslate"><span class="pre">StackingFaultCurve.area</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.stacking_fault.StackingFaultCurve.from_arrays"><code class="docutils literal notranslate"><span class="pre">StackingFaultCurve.from_arrays()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.stacking_fault.StackingFaultCurve.normalized_energies"><code class="docutils literal notranslate"><span class="pre">StackingFaultCurve.normalized_energies()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.stacking_fault.StackingFaultCurve.unstable_fault_energy"><code class="docutils literal notranslate"><span class="pre">StackingFaultCurve.unstable_fault_energy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.stacking_fault.StackingFaultCurve.intrinsic_fault_energy"><code class="docutils literal notranslate"><span class="pre">StackingFaultCurve.intrinsic_fault_energy()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#atomdefectkit.stacking_fault.StackingFaultWorkflow"><code class="docutils literal notranslate"><span class="pre">StackingFaultWorkflow</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.stacking_fault.StackingFaultWorkflow.stacking_fault"><code class="docutils literal notranslate"><span class="pre">StackingFaultWorkflow.stacking_fault()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#atomdefectkit.traction_separation.TractionSeparationCurve"><code class="docutils literal notranslate"><span class="pre">TractionSeparationCurve</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.traction_separation.TractionSeparationCurve.separation"><code class="docutils literal notranslate"><span class="pre">TractionSeparationCurve.separation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.traction_separation.TractionSeparationCurve.energy"><code class="docutils literal notranslate"><span class="pre">TractionSeparationCurve.energy</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.traction_separation.TractionSeparationCurve.area"><code class="docutils literal notranslate"><span class="pre">TractionSeparationCurve.area</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.traction_separation.TractionSeparationCurve.from_arrays"><code class="docutils literal notranslate"><span class="pre">TractionSeparationCurve.from_arrays()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.traction_separation.TractionSeparationCurve.traction"><code class="docutils literal notranslate"><span class="pre">TractionSeparationCurve.traction()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.traction_separation.TractionSeparationCurve.peak_traction"><code class="docutils literal notranslate"><span class="pre">TractionSeparationCurve.peak_traction()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.traction_separation.TractionSeparationCurve.work_of_separation"><code class="docutils literal notranslate"><span class="pre">TractionSeparationCurve.work_of_separation()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#atomdefectkit.traction_separation.TractionSeparationWorkflow"><code class="docutils literal notranslate"><span class="pre">TractionSeparationWorkflow</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.traction_separation.TractionSeparationWorkflow.generate_tetra_sites"><code class="docutils literal notranslate"><span class="pre">TractionSeparationWorkflow.generate_tetra_sites()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.traction_separation.TractionSeparationWorkflow.build_bcc_slab"><code class="docutils literal notranslate"><span class="pre">TractionSeparationWorkflow.build_bcc_slab()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.traction_separation.TractionSeparationWorkflow.make_gap_from_base"><code class="docutils literal notranslate"><span class="pre">TractionSeparationWorkflow.make_gap_from_base()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.traction_separation.TractionSeparationWorkflow.surface_area_from_atoms"><code class="docutils literal notranslate"><span class="pre">TractionSeparationWorkflow.surface_area_from_atoms()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.traction_separation.TractionSeparationWorkflow.count_surface_H"><code class="docutils literal notranslate"><span class="pre">TractionSeparationWorkflow.count_surface_H()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.traction_separation.TractionSeparationWorkflow.relax_base_structure"><code class="docutils literal notranslate"><span class="pre">TractionSeparationWorkflow.relax_base_structure()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.traction_separation.TractionSeparationWorkflow.add_hydrogen_sites"><code class="docutils literal notranslate"><span class="pre">TractionSeparationWorkflow.add_hydrogen_sites()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.traction_separation.TractionSeparationWorkflow.run_pure_separation"><code class="docutils literal notranslate"><span class="pre">TractionSeparationWorkflow.run_pure_separation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.traction_separation.TractionSeparationWorkflow.run_h_separation"><code class="docutils literal notranslate"><span class="pre">TractionSeparationWorkflow.run_h_separation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.traction_separation.TractionSeparationWorkflow.run_coverage_scan"><code class="docutils literal notranslate"><span class="pre">TractionSeparationWorkflow.run_coverage_scan()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.traction_separation.TractionSeparationWorkflow.plot_pure_separation"><code class="docutils literal notranslate"><span class="pre">TractionSeparationWorkflow.plot_pure_separation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#atomdefectkit.traction_separation.TractionSeparationWorkflow.plot_h_separation"><code class="docutils literal notranslate"><span class="pre">TractionSeparationWorkflow.plot_h_separation()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-atomdefectkit.model_discovery">Registry helpers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#atomdefectkit.model_discovery.discover_models"><code class="docutils literal notranslate"><span class="pre">discover_models()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#atomdefectkit.registry.register_model"><code class="docutils literal notranslate"><span class="pre">register_model()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">AtomDefectKit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">API reference</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/api.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="api-reference">
+<h1>API reference<a class="headerlink" href="#api-reference" title="Link to this heading"></a></h1>
+<section id="module-atomdefectkit">
+<span id="top-level-package"></span><h2>Top-level package<a class="headerlink" href="#module-atomdefectkit" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="atomdefectkit.available_models">
+<span class="sig-prename descclassname"><span class="pre">atomdefectkit.</span></span><span class="sig-name descname"><span class="pre">available_models</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.available_models" title="Link to this definition"></a></dt>
+<dd><p>Return the names of model loaders bundled with AtomDefectKit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="atomdefectkit.available_model_metadata">
+<span class="sig-prename descclassname"><span class="pre">atomdefectkit.</span></span><span class="sig-name descname"><span class="pre">available_model_metadata</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.available_model_metadata" title="Link to this definition"></a></dt>
+<dd><p>Return metadata for bundled model loaders that can be imported.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="atomdefectkit.load_model">
+<span class="sig-prename descclassname"><span class="pre">atomdefectkit.</span></span><span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cuda'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.load_model" title="Link to this definition"></a></dt>
+<dd><p>Build an ASE-compatible calculator from a registered model loader.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_name</strong> (<em>str</em>)</p></li>
+<li><p><strong>model_parameters</strong> (<em>dict</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>device</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="atomdefectkit.main">
+<span class="sig-prename descclassname"><span class="pre">atomdefectkit.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.main" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-atomdefectkit.basic_properties">
+<span id="core-workflows"></span><h2>Core workflows<a class="headerlink" href="#module-atomdefectkit.basic_properties" title="Link to this heading"></a></h2>
+<p>Point-defect and basic-property workflows for BCC metals.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="atomdefectkit.basic_properties.BasicProperties">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">atomdefectkit.basic_properties.</span></span><span class="sig-name descname"><span class="pre">BasicProperties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cuda'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calculator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">working_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.basic_properties.BasicProperties" title="Link to this definition"></a></dt>
+<dd><p>Run basic bulk, surface, defect, and postprocessing workflows with an ASE calculator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_name</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>model_parameters</strong> (<em>dict</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>device</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.basic_properties.BasicProperties.get_calculator">
+<span class="sig-name descname"><span class="pre">get_calculator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.basic_properties.BasicProperties.get_calculator" title="Link to this definition"></a></dt>
+<dd><p>Return the ASE calculator attached to this workflow.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Calculator loaded directly or through a model
+registry entry.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>ASE-compatible calculator</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.basic_properties.BasicProperties.create_stacking_fault_workflow">
+<span class="sig-name descname"><span class="pre">create_stacking_fault_workflow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formula</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Calculated'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'FIRE'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">working_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.basic_properties.BasicProperties.create_stacking_fault_workflow" title="Link to this definition"></a></dt>
+<dd><p>Create a stacking-fault workflow that reuses this workflow calculator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>atoms</strong> – Reference structure used to build the faulted slab.</p></li>
+<li><p><strong>formula</strong> (<em>str</em><em> | </em><em>None</em>) – Optional chemical formula label used in output filenames.</p></li>
+<li><p><strong>info</strong> (<em>str</em>) – Short label written into summary files and plot legends.</p></li>
+<li><p><strong>optimizer</strong> (<em>str</em>) – Geometry optimizer label passed to the stacking-fault workflow.</p></li>
+<li><p><strong>working_dir</strong> (<em>str</em><em> | </em><em>None</em>) – Optional directory for stacking-fault outputs. When omitted,
+<code class="docutils literal notranslate"><span class="pre">self.working_dir</span></code> is reused.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Workflow instance sharing this calculator.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#atomdefectkit.stacking_fault.StackingFaultWorkflow" title="atomdefectkit.stacking_fault.StackingFaultWorkflow">StackingFaultWorkflow</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.basic_properties.BasicProperties.create_traction_separation_workflow">
+<span class="sig-name descname"><span class="pre">create_traction_separation_workflow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repeat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(3,</span> <span class="pre">3,</span> <span class="pre">16)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">working_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'FIRE'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.basic_properties.BasicProperties.create_traction_separation_workflow" title="Link to this definition"></a></dt>
+<dd><p>Create a traction-separation workflow that reuses this workflow calculator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>atoms</strong> – Reference bulk or slab structure.</p></li>
+<li><p><strong>surface_index</strong> – Optional surface Miller index such as <code class="docutils literal notranslate"><span class="pre">(1,</span> <span class="pre">0,</span> <span class="pre">0)</span></code>.</p></li>
+<li><p><strong>repeat</strong> – Supercell repetition counts along the slab directions.</p></li>
+<li><p><strong>working_dir</strong> (<em>str</em><em> | </em><em>None</em>) – Optional directory for traction-separation outputs. When
+omitted, <code class="docutils literal notranslate"><span class="pre">self.working_dir</span></code> is reused.</p></li>
+<li><p><strong>optimizer</strong> (<em>str</em>) – Geometry optimizer label passed to the TS workflow.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Workflow instance sharing this calculator.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#atomdefectkit.traction_separation.TractionSeparationWorkflow" title="atomdefectkit.traction_separation.TractionSeparationWorkflow">TractionSeparationWorkflow</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.basic_properties.BasicProperties.create_screw_dislocation_workflow">
+<span class="sig-name descname"><span class="pre">create_screw_dislocation_workflow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">element</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lattice_constant</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elastic_constant</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">working_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.basic_properties.BasicProperties.create_screw_dislocation_workflow" title="Link to this definition"></a></dt>
+<dd><p>Create a screw-dislocation workflow that reuses this workflow calculator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>element</strong> – Chemical symbol of the BCC metal.</p></li>
+<li><p><strong>lattice_constant</strong> – Relaxed lattice constant in Angstrom.</p></li>
+<li><p><strong>elastic_constant</strong> – Elastic constants array passed to the screw workflow.</p></li>
+<li><p><strong>working_dir</strong> (<em>str</em><em> | </em><em>None</em>) – Optional output directory. When omitted, <code class="docutils literal notranslate"><span class="pre">self.working_dir</span></code>
+is reused.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Workflow instance sharing this calculator.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#atomdefectkit.screw.BCCScrewDislocation" title="atomdefectkit.screw.BCCScrewDislocation">BCCScrewDislocation</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.basic_properties.BasicProperties.birch_murnaghan_eos">
+<span class="sig-name descname"><span class="pre">birch_murnaghan_eos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vol</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.basic_properties.BasicProperties.birch_murnaghan_eos" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.basic_properties.BasicProperties.fit_birch_murnaghan">
+<span class="sig-name descname"><span class="pre">fit_birch_murnaghan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volumes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energies</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.basic_properties.BasicProperties.fit_birch_murnaghan" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.basic_properties.BasicProperties.calculate_equilibrium_a0_birch_murnaghan">
+<span class="sig-name descname"><span class="pre">calculate_equilibrium_a0_birch_murnaghan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vol_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">array([0.99,</span> <span class="pre">0.99068966,</span> <span class="pre">0.99137931,</span> <span class="pre">0.99206897,</span> <span class="pre">0.99275862,</span> <span class="pre">0.99344828,</span> <span class="pre">0.99413793,</span> <span class="pre">0.99482759,</span> <span class="pre">0.99551724,</span> <span class="pre">0.9962069,</span> <span class="pre">0.99689655,</span> <span class="pre">0.99758621,</span> <span class="pre">0.99827586,</span> <span class="pre">0.99896552,</span> <span class="pre">0.99965517,</span> <span class="pre">1.00034483,</span> <span class="pre">1.00103448,</span> <span class="pre">1.00172414,</span> <span class="pre">1.00241379,</span> <span class="pre">1.00310345,</span> <span class="pre">1.0037931,</span> <span class="pre">1.00448276,</span> <span class="pre">1.00517241,</span> <span class="pre">1.00586207,</span> <span class="pre">1.00655172,</span> <span class="pre">1.00724138,</span> <span class="pre">1.00793103,</span> <span class="pre">1.00862069,</span> <span class="pre">1.00931034,</span> <span class="pre">1.01])</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.basic_properties.BasicProperties.calculate_equilibrium_a0_birch_murnaghan" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.basic_properties.BasicProperties.calculate_equilibrium_a0_relax">
+<span class="sig-name descname"><span class="pre">calculate_equilibrium_a0_relax</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.basic_properties.BasicProperties.calculate_equilibrium_a0_relax" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.basic_properties.BasicProperties.calculate_elastic_constants">
+<span class="sig-name descname"><span class="pre">calculate_elastic_constants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.basic_properties.BasicProperties.calculate_elastic_constants" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.basic_properties.BasicProperties.calculate_surface_energy">
+<span class="sig-name descname"><span class="pre">calculate_surface_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">miller_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vacuum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.basic_properties.BasicProperties.calculate_surface_energy" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.basic_properties.BasicProperties.calculate_phonon_dispersion">
+<span class="sig-name descname"><span class="pre">calculate_phonon_dispersion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">special_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formula</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">supercell_matrix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">primitive_matrix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.basic_properties.BasicProperties.calculate_phonon_dispersion" title="Link to this definition"></a></dt>
+<dd><p>Calculate and plot the phonon dispersion relation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>structure</strong> – Structure used for the phonon calculation.</p></li>
+<li><p><strong>special_points</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>]</em><em>] </em><em>| </em><em>None</em>) – Optional high-symmetry points in fractional reciprocal
+coordinates. When omitted, ASE derives them from the primitive cell.</p></li>
+<li><p><strong>labels_path</strong> – Optional band path as a sequence of label paths, e.g.
+<code class="docutils literal notranslate"><span class="pre">[['N',</span> <span class="pre">'G',</span> <span class="pre">'H',</span> <span class="pre">'P',</span> <span class="pre">'G']]</span></code>.</p></li>
+<li><p><strong>formula</strong> (<em>str</em><em> | </em><em>None</em>) – Optional label used in the output filename and plot title.</p></li>
+<li><p><strong>info</strong> (<em>dict</em><em> | </em><em>None</em>) – Optional metadata dictionary; if it contains <code class="docutils literal notranslate"><span class="pre">label</span></code> or <code class="docutils literal notranslate"><span class="pre">title</span></code>,
+that value is used in the plot title.</p></li>
+<li><p><strong>supercell_matrix</strong> – Optional Phonopy supercell matrix. When omitted, a
+<code class="docutils literal notranslate"><span class="pre">3x3x3</span></code> diagonal supercell is used.</p></li>
+<li><p><strong>primitive_matrix</strong> – Primitive-cell setting passed to Phonopy. The default
+<code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> keeps the standard primitive-cell phonon workflow for
+crystals like BCC while silencing the corresponding Phonopy default
+warning.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Path to the saved phonon-dispersion figure.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ImportError</strong> – If the required <code class="docutils literal notranslate"><span class="pre">phonopy</span></code> or <code class="docutils literal notranslate"><span class="pre">spglib</span></code> dependency is missing.</p></li>
+<li><p><strong>RuntimeError</strong> – If the primitive cell cannot be determined from <code class="docutils literal notranslate"><span class="pre">structure</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.basic_properties.BasicProperties.calculate_vacancy_formation_energy">
+<span class="sig-name descname"><span class="pre">calculate_vacancy_formation_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.basic_properties.BasicProperties.calculate_vacancy_formation_energy" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.basic_properties.BasicProperties.calculate_interstitial_formation_energy">
+<span class="sig-name descname"><span class="pre">calculate_interstitial_formation_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inter_atom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interstitial_position</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dumbbell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">relax_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.basic_properties.BasicProperties.calculate_interstitial_formation_energy" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.basic_properties.BasicProperties.relax_fire_bfgs">
+<span class="sig-name descname"><span class="pre">relax_fire_bfgs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmax_fire</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmax_bfgs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.basic_properties.BasicProperties.relax_fire_bfgs" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.basic_properties.BasicProperties.save_properties">
+<span class="sig-name descname"><span class="pre">save_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volumes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energies</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Cij</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface_energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vacancy_formation_energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">octahedral_formation_energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tetrahedral_formation_energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inter_100_formation_energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inter_110_formation_energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inter_111_formation_energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">miller_indices_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'calculated_data.json'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.basic_properties.BasicProperties.save_properties" title="Link to this definition"></a></dt>
+<dd><p>Serialize calculated basic-property results to a JSON summary file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>volumes</strong> (<em>array-like</em>) – Equation-of-state volumes and energies.</p></li>
+<li><p><strong>energies</strong> (<em>array-like</em>) – Equation-of-state volumes and energies.</p></li>
+<li><p><strong>Cij</strong> (<em>array-like</em>) – Elastic constants array.</p></li>
+<li><p><strong>surface_energy</strong> (<em>array-like</em>) – Surface energies ordered by <code class="docutils literal notranslate"><span class="pre">miller_indices_list</span></code>.</p></li>
+<li><p><strong>vacancy_formation_energy</strong> (<em>float</em>) – Point-defect formation energies in eV.</p></li>
+<li><p><strong>octahedral_formation_energy</strong> (<em>float</em>) – Point-defect formation energies in eV.</p></li>
+<li><p><strong>tetrahedral_formation_energy</strong> (<em>float</em>) – Point-defect formation energies in eV.</p></li>
+<li><p><strong>inter_100_formation_energy</strong> (<em>float</em>) – Dumbbell/interstitial formation energies in eV.</p></li>
+<li><p><strong>inter_110_formation_energy</strong> (<em>float</em>) – Dumbbell/interstitial formation energies in eV.</p></li>
+<li><p><strong>inter_111_formation_energy</strong> (<em>float</em>) – Dumbbell/interstitial formation energies in eV.</p></li>
+<li><p><strong>miller_indices_list</strong> (<em>list</em><em>[</em><em>tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>, </em><em>int</em><em>]</em><em>] </em><em>| </em><em>None</em>) – Miller indices associated with <code class="docutils literal notranslate"><span class="pre">surface_energy</span></code>.</p></li>
+<li><p><strong>save_name</strong> (<em>str</em>) – Output JSON filename saved inside <code class="docutils literal notranslate"><span class="pre">self.working_dir</span></code>.</p></li>
+<li><p><strong>volume_scale</strong> (<em>float</em>) – Divisors applied before serialization, matching the historical script output.</p></li>
+<li><p><strong>energy_scale</strong> (<em>float</em>) – Divisors applied before serialization, matching the historical script output.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Path to the saved JSON file.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.basic_properties.BasicProperties.plot_comparison">
+<span class="sig-name descname"><span class="pre">plot_comparison</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">calculated_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dft_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'comparison.pdf'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.basic_properties.BasicProperties.plot_comparison" title="Link to this definition"></a></dt>
+<dd><p>Plot calculated properties, optionally alongside DFT reference data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>calculated_data</strong> (<em>dict</em><em> | </em><em>str</em><em> | </em><em>os.PathLike</em>) – Calculated properties to visualize, or a path to a JSON file containing them.</p></li>
+<li><p><strong>dft_data</strong> (<em>dict</em><em> | </em><em>str</em><em> | </em><em>os.PathLike</em><em> | </em><em>None</em>) – Optional DFT reference data, or a path to a JSON file containing it.
+When omitted, only calculated values are shown.</p></li>
+<li><p><strong>save_name</strong> (<em>str</em>) – Output filename saved inside <code class="docutils literal notranslate"><span class="pre">self.working_dir</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Path to the saved figure.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<p id="module-atomdefectkit.screw">BCC screw dislocation setup and analysis tools.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="atomdefectkit.screw.BCCScrewDislocation">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">atomdefectkit.screw.</span></span><span class="sig-name descname"><span class="pre">BCCScrewDislocation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">element</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lattice_constant</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elastic_constant</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calculator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">working_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.screw.BCCScrewDislocation" title="Link to this definition"></a></dt>
+<dd><p>Create, relax, and analyze screw dislocation dipoles in BCC metals.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.screw.BCCScrewDislocation.validate_cubic_elastic_constants">
+<span class="sig-name descname"><span class="pre">validate_cubic_elastic_constants</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.screw.BCCScrewDislocation.validate_cubic_elastic_constants" title="Link to this definition"></a></dt>
+<dd><p>Validate cubic elastic constants before screw-dislocation setup.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.screw.BCCScrewDislocation.create_dislocation_object">
+<span class="sig-name descname"><span class="pre">create_dislocation_object</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.screw.BCCScrewDislocation.create_dislocation_object" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.screw.BCCScrewDislocation.relax_dislocation_dipole">
+<span class="sig-name descname"><span class="pre">relax_dislocation_dipole</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dislocation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disloc_center</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'BFGS'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.screw.BCCScrewDislocation.relax_dislocation_dipole" title="Link to this definition"></a></dt>
+<dd><p>Build and relax a screw-dislocation dipole.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dislocation</strong> – Atomman dislocation object used to construct the dipole.</p></li>
+<li><p><strong>disloc_center</strong> – Dislocation center passed to <code class="docutils literal notranslate"><span class="pre">dislocation.dipole</span></code>.</p></li>
+<li><p><strong>fmax</strong> – Force convergence threshold.</p></li>
+<li><p><strong>optimizer</strong> – ASE optimizer label.</p></li>
+<li><p><strong>logfile</strong> – Optional optimizer logfile saved under <code class="docutils literal notranslate"><span class="pre">working_dir</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Base atomman system and relaxed dislocation atomman system.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.screw.BCCScrewDislocation.plot_differential_displacement_map">
+<span class="sig-name descname"><span class="pre">plot_differential_displacement_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dislocation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_system</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dislocation_system</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.screw.BCCScrewDislocation.plot_differential_displacement_map" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<p id="module-atomdefectkit.neb">Peierls barrier workflows for BCC screw dislocations.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="atomdefectkit.neb.BCCScrewDislocPeierlsBarrier">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">atomdefectkit.neb.</span></span><span class="sig-name descname"><span class="pre">BCCScrewDislocPeierlsBarrier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">initial_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'uMLFFs'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Nreplica</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'FIRE'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">working_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.neb.BCCScrewDislocPeierlsBarrier" title="Link to this definition"></a></dt>
+<dd><p>Calculate Peierls barriers with a NEB workflow.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.neb.BCCScrewDislocPeierlsBarrier.relax_initial_final">
+<span class="sig-name descname"><span class="pre">relax_initial_final</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.neb.BCCScrewDislocPeierlsBarrier.relax_initial_final" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.neb.BCCScrewDislocPeierlsBarrier.run_neb">
+<span class="sig-name descname"><span class="pre">run_neb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spring_constant</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.neb.BCCScrewDislocPeierlsBarrier.run_neb" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.neb.BCCScrewDislocPeierlsBarrier.plot_barrier">
+<span class="sig-name descname"><span class="pre">plot_barrier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">element</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trajectory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'neb.traj'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_poscar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_csv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compare_vasp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vasp_data_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.neb.BCCScrewDislocPeierlsBarrier.plot_barrier" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<p id="module-atomdefectkit.stacking_fault">Generalized stacking-fault workflows and helpers.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="atomdefectkit.stacking_fault.StackingFaultCurve">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">atomdefectkit.stacking_fault.</span></span><span class="sig-name descname"><span class="pre">StackingFaultCurve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">displacements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energies</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">area</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.stacking_fault.StackingFaultCurve" title="Link to this definition"></a></dt>
+<dd><p>Container and helpers for generalized stacking-fault calculations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>displacements</strong> (<em>ndarray</em>)</p></li>
+<li><p><strong>energies</strong> (<em>ndarray</em>)</p></li>
+<li><p><strong>area</strong> (<em>float</em><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="atomdefectkit.stacking_fault.StackingFaultCurve.displacements">
+<span class="sig-name descname"><span class="pre">displacements</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></span><a class="headerlink" href="#atomdefectkit.stacking_fault.StackingFaultCurve.displacements" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="atomdefectkit.stacking_fault.StackingFaultCurve.energies">
+<span class="sig-name descname"><span class="pre">energies</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></span><a class="headerlink" href="#atomdefectkit.stacking_fault.StackingFaultCurve.energies" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="atomdefectkit.stacking_fault.StackingFaultCurve.area">
+<span class="sig-name descname"><span class="pre">area</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#atomdefectkit.stacking_fault.StackingFaultCurve.area" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.stacking_fault.StackingFaultCurve.from_arrays">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_arrays</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">displacements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energies</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">area</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.stacking_fault.StackingFaultCurve.from_arrays" title="Link to this definition"></a></dt>
+<dd><p>Build a <code class="docutils literal notranslate"><span class="pre">StackingFaultCurve</span></code> from array-like inputs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>displacements</strong> – Reaction-coordinate values for the stacking-fault path.</p></li>
+<li><p><strong>energies</strong> – Energy values associated with <code class="docutils literal notranslate"><span class="pre">displacements</span></code>.</p></li>
+<li><p><strong>area</strong> – Optional interfacial area used for normalization.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Curve object with NumPy-backed arrays.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#atomdefectkit.stacking_fault.StackingFaultCurve" title="atomdefectkit.stacking_fault.StackingFaultCurve">StackingFaultCurve</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.stacking_fault.StackingFaultCurve.normalized_energies">
+<span class="sig-name descname"><span class="pre">normalized_energies</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.stacking_fault.StackingFaultCurve.normalized_energies" title="Link to this definition"></a></dt>
+<dd><p>Shift energies so the minimum value is zero, optionally normalizing by area.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Normalized energy values.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.stacking_fault.StackingFaultCurve.unstable_fault_energy">
+<span class="sig-name descname"><span class="pre">unstable_fault_energy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.stacking_fault.StackingFaultCurve.unstable_fault_energy" title="Link to this definition"></a></dt>
+<dd><p>Return the unstable stacking-fault energy along the path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Maximum normalized stacking-fault energy.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.stacking_fault.StackingFaultCurve.intrinsic_fault_energy">
+<span class="sig-name descname"><span class="pre">intrinsic_fault_energy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.stacking_fault.StackingFaultCurve.intrinsic_fault_energy" title="Link to this definition"></a></dt>
+<dd><p>Return the intrinsic stacking-fault energy estimate from the path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Minimum normalized energy away from the two endpoints.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="atomdefectkit.stacking_fault.StackingFaultWorkflow">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">atomdefectkit.stacking_fault.</span></span><span class="sig-name descname"><span class="pre">StackingFaultWorkflow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calculator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formula</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Calculated'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'FIRE'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">working_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.stacking_fault.StackingFaultWorkflow" title="Link to this definition"></a></dt>
+<dd><p>Build, relax, and plot generalized stacking-fault energy curves.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>formula</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>info</strong> (<em>str</em>)</p></li>
+<li><p><strong>optimizer</strong> (<em>str</em>)</p></li>
+<li><p><strong>working_dir</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.stacking_fault.StackingFaultWorkflow.stacking_fault">
+<span class="sig-name descname"><span class="pre">stacking_fault</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">miller</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">18</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_xyz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.stacking_fault.StackingFaultWorkflow.stacking_fault" title="Link to this definition"></a></dt>
+<dd><p>Calculate a generalized stacking-fault energy curve.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> (<em>sequence</em><em>[</em><em>float</em><em>]</em>) – In-plane slab vectors in scaled coordinates passed to <code class="docutils literal notranslate"><span class="pre">ase.build.cut</span></code>.</p></li>
+<li><p><strong>b</strong> (<em>sequence</em><em>[</em><em>float</em><em>]</em>) – In-plane slab vectors in scaled coordinates passed to <code class="docutils literal notranslate"><span class="pre">ase.build.cut</span></code>.</p></li>
+<li><p><strong>miller</strong> (<em>sequence</em><em>[</em><em>int</em><em>]</em>) – Miller-index label used in filenames and summary output.</p></li>
+<li><p><strong>distance</strong> (<em>float</em>) – Fractional translation distance applied along vector <code class="docutils literal notranslate"><span class="pre">a</span></code>.</p></li>
+<li><p><strong>layers</strong> (<em>int</em>) – Number of layers in the generated slab.</p></li>
+<li><p><strong>num_steps</strong> (<em>int</em>) – Number of sliding increments along the reaction path.</p></li>
+<li><p><strong>fmax</strong> (<em>float</em>) – Force threshold used during each relaxation.</p></li>
+<li><p><strong>steps</strong> (<em>int</em>) – Maximum optimizer steps for each relaxation.</p></li>
+<li><p><strong>write_xyz</strong> (<em>bool</em>) – Whether to write each relaxed shifted slab to an XYZ trajectory.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Stacking-fault energies in eV/Angstrom^2 relative to the unshifted slab.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<p id="module-atomdefectkit.traction_separation">Traction-separation workflows and helpers.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="atomdefectkit.traction_separation.TractionSeparationCurve">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">atomdefectkit.traction_separation.</span></span><span class="sig-name descname"><span class="pre">TractionSeparationCurve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">separation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">area</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.traction_separation.TractionSeparationCurve" title="Link to this definition"></a></dt>
+<dd><p>Container for cohesive traction-separation relations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>separation</strong> (<em>ndarray</em>)</p></li>
+<li><p><strong>energy</strong> (<em>ndarray</em>)</p></li>
+<li><p><strong>area</strong> (<em>float</em><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="atomdefectkit.traction_separation.TractionSeparationCurve.separation">
+<span class="sig-name descname"><span class="pre">separation</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></span><a class="headerlink" href="#atomdefectkit.traction_separation.TractionSeparationCurve.separation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="atomdefectkit.traction_separation.TractionSeparationCurve.energy">
+<span class="sig-name descname"><span class="pre">energy</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></span><a class="headerlink" href="#atomdefectkit.traction_separation.TractionSeparationCurve.energy" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="atomdefectkit.traction_separation.TractionSeparationCurve.area">
+<span class="sig-name descname"><span class="pre">area</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#atomdefectkit.traction_separation.TractionSeparationCurve.area" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.traction_separation.TractionSeparationCurve.from_arrays">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_arrays</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">separation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">area</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.traction_separation.TractionSeparationCurve.from_arrays" title="Link to this definition"></a></dt>
+<dd><p>Build a <code class="docutils literal notranslate"><span class="pre">TractionSeparationCurve</span></code> from array-like inputs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>separation</strong> – Separation distances along the opening path.</p></li>
+<li><p><strong>energy</strong> – Energies associated with <code class="docutils literal notranslate"><span class="pre">separation</span></code>.</p></li>
+<li><p><strong>area</strong> – Optional interfacial area used for normalization.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Curve object backed by NumPy arrays.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#atomdefectkit.traction_separation.TractionSeparationCurve" title="atomdefectkit.traction_separation.TractionSeparationCurve">TractionSeparationCurve</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.traction_separation.TractionSeparationCurve.traction">
+<span class="sig-name descname"><span class="pre">traction</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.traction_separation.TractionSeparationCurve.traction" title="Link to this definition"></a></dt>
+<dd><p>Differentiate the energy curve with respect to separation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Traction values computed by finite differences.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.traction_separation.TractionSeparationCurve.peak_traction">
+<span class="sig-name descname"><span class="pre">peak_traction</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.traction_separation.TractionSeparationCurve.peak_traction" title="Link to this definition"></a></dt>
+<dd><p>Return the maximum traction on the curve.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Peak cohesive traction.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.traction_separation.TractionSeparationCurve.work_of_separation">
+<span class="sig-name descname"><span class="pre">work_of_separation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.traction_separation.TractionSeparationCurve.work_of_separation" title="Link to this definition"></a></dt>
+<dd><p>Return the work of separation derived from the energy curve.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Maximum shifted energy, optionally normalized by area.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="atomdefectkit.traction_separation.TractionSeparationWorkflow">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">atomdefectkit.traction_separation.</span></span><span class="sig-name descname"><span class="pre">TractionSeparationWorkflow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calculator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repeat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(3,</span> <span class="pre">3,</span> <span class="pre">16)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">working_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'FIRE'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.traction_separation.TractionSeparationWorkflow" title="Link to this definition"></a></dt>
+<dd><p>Build and analyze traction-separation curves for pure and H-decorated slabs.</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.traction_separation.TractionSeparationWorkflow.generate_tetra_sites">
+<span class="sig-name descname"><span class="pre">generate_tetra_sites</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ny</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.traction_separation.TractionSeparationWorkflow.generate_tetra_sites" title="Link to this definition"></a></dt>
+<dd><p>Tile the reference tetrahedral H sites across the in-plane supercell.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cell</strong> (<em>ndarray</em>) – Simulation cell used for the slab.</p></li>
+<li><p><strong>nx</strong> (<em>int</em>) – Number of repeats along the first in-plane direction.</p></li>
+<li><p><strong>ny</strong> (<em>int</em>) – Number of repeats along the second in-plane direction.</p></li>
+<li><p><strong>eps</strong> (<em>float</em>) – Small z offset passed to <code class="docutils literal notranslate"><span class="pre">base_tetra_sites_frac</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Site records containing positions, layer labels, and tile indices.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[dict]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.traction_separation.TractionSeparationWorkflow.build_bcc_slab">
+<span class="sig-name descname"><span class="pre">build_bcc_slab</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.traction_separation.TractionSeparationWorkflow.build_bcc_slab" title="Link to this definition"></a></dt>
+<dd><p>Build the slab used for traction-separation scans.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Repeated and centered slab structure.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>ase.Atoms</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.traction_separation.TractionSeparationWorkflow.make_gap_from_base">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">make_gap_from_base</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">slab</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vac</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.traction_separation.TractionSeparationWorkflow.make_gap_from_base" title="Link to this definition"></a></dt>
+<dd><p>Open a cleavage gap by extending the cell and shifting the top half.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>slab</strong> – Reference slab structure.</p></li>
+<li><p><strong>vac</strong> – Gap opening distance in Angstrom.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Copied structure with the imposed opening displacement.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ase.Atoms</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.traction_separation.TractionSeparationWorkflow.surface_area_from_atoms">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">surface_area_from_atoms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.traction_separation.TractionSeparationWorkflow.surface_area_from_atoms" title="Link to this definition"></a></dt>
+<dd><p>Compute the in-plane surface area from the first two cell vectors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>atoms</strong> – Structure providing the simulation cell.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>In-plane area in Angstrom squared.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.traction_separation.TractionSeparationWorkflow.count_surface_H">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">count_surface_H</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.6</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.traction_separation.TractionSeparationWorkflow.count_surface_H" title="Link to this definition"></a></dt>
+<dd><p>Count H atoms associated with the top and bottom free surfaces.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>atoms</strong> – Structure containing host and hydrogen atoms.</p></li>
+<li><p><strong>z_tol</strong> – Distance cutoff used to assign H atoms to a surface.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of H atoms on the top and bottom surfaces.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[int, int]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.traction_separation.TractionSeparationWorkflow.relax_base_structure">
+<span class="sig-name descname"><span class="pre">relax_base_structure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nH</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmax_cell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmax_atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'SciPyFminCG'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.traction_separation.TractionSeparationWorkflow.relax_base_structure" title="Link to this definition"></a></dt>
+<dd><p>Run the two-stage relaxation used before opening traction-separation gaps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>atoms</strong> – H-decorated slab to relax.</p></li>
+<li><p><strong>nH</strong> – Initial number of H atoms, used in logfile names.</p></li>
+<li><p><strong>fmax_cell</strong> – Force threshold for the cell relaxation stage.</p></li>
+<li><p><strong>fmax_atoms</strong> – Force threshold for the atomic relaxation stage.</p></li>
+<li><p><strong>steps</strong> – Maximum steps for each optimizer.</p></li>
+<li><p><strong>optimizer</strong> – Optional atomic optimizer label for this relaxation call.</p></li>
+<li><p><strong>cell_optimizer</strong> – Optional <code class="docutils literal notranslate"><span class="pre">UnitCellFilter</span></code> optimizer label for this
+relaxation call.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Relaxed slab.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ase.Atoms</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.traction_separation.TractionSeparationWorkflow.add_hydrogen_sites">
+<span class="sig-name descname"><span class="pre">add_hydrogen_sites</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">slab</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nH</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top_sites</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bot_sites</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.traction_separation.TractionSeparationWorkflow.add_hydrogen_sites" title="Link to this definition"></a></dt>
+<dd><p>Populate the slab with symmetric H coverages on the two free surfaces.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>slab</strong> – Reference slab without H.</p></li>
+<li><p><strong>nH</strong> – Total number of H atoms to add.</p></li>
+<li><p><strong>top_sites</strong> – Candidate adsorption sites on the top surface.</p></li>
+<li><p><strong>bot_sites</strong> – Candidate adsorption sites on the bottom surface.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Copied slab decorated with H atoms.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ase.Atoms</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.traction_separation.TractionSeparationWorkflow.run_pure_separation">
+<span class="sig-name descname"><span class="pre">run_pure_separation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vacuum_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_xyz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'SciPyFminCG'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.traction_separation.TractionSeparationWorkflow.run_pure_separation" title="Link to this definition"></a></dt>
+<dd><p>Run a traction-separation calculation for the pure metal slab.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vacuum_values</strong> – Separation distances used to open the cleavage gap.</p></li>
+<li><p><strong>write_xyz</strong> – Whether to save an <code class="docutils literal notranslate"><span class="pre">extxyz</span></code> trajectory for the scan.</p></li>
+<li><p><strong>optimizer</strong> – Optional atomic optimizer label for the base relaxation.</p></li>
+<li><p><strong>cell_optimizer</strong> – <code class="docutils literal notranslate"><span class="pre">UnitCellFilter</span></code> optimizer label for the base relaxation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Separation distances, energies, areas, midpoint tractions,
+and derived cohesive metrics for the pure slab.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.traction_separation.TractionSeparationWorkflow.run_h_separation">
+<span class="sig-name descname"><span class="pre">run_h_separation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nH_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vacuum_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_xyz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'SciPyFminCG'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.traction_separation.TractionSeparationWorkflow.run_h_separation" title="Link to this definition"></a></dt>
+<dd><p>Run traction-separation scans across a list of H coverages.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nH_list</strong> – Iterable of H counts to scan.</p></li>
+<li><p><strong>vacuum_values</strong> – Separation distances used to open the cleavage gap.</p></li>
+<li><p><strong>eps</strong> – Small z offset used when generating adsorption sites.</p></li>
+<li><p><strong>z_tol</strong> – Distance cutoff used when counting surface H atoms.</p></li>
+<li><p><strong>write_xyz</strong> – Whether to save an <code class="docutils literal notranslate"><span class="pre">extxyz</span></code> trajectory for each coverage.</p></li>
+<li><p><strong>optimizer</strong> – Optional atomic optimizer label for each base relaxation.</p></li>
+<li><p><strong>cell_optimizer</strong> – <code class="docutils literal notranslate"><span class="pre">UnitCellFilter</span></code> optimizer label for each base relaxation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Raw TS curves, averaged metrics, effective coverage values,
+and output file paths for the completed scan.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.traction_separation.TractionSeparationWorkflow.run_coverage_scan">
+<span class="sig-name descname"><span class="pre">run_coverage_scan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.traction_separation.TractionSeparationWorkflow.run_coverage_scan" title="Link to this definition"></a></dt>
+<dd><p>Backward-compatible alias for <code class="docutils literal notranslate"><span class="pre">run_h_separation</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Results dictionary returned by <code class="docutils literal notranslate"><span class="pre">run_h_separation</span></code>.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.traction_separation.TractionSeparationWorkflow.plot_pure_separation">
+<span class="sig-name descname"><span class="pre">plot_pure_separation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pure_traction_separation.png'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.traction_separation.TractionSeparationWorkflow.plot_pure_separation" title="Link to this definition"></a></dt>
+<dd><p>Plot stress versus separation for a pure-metal traction-separation run.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>results</strong> – Results dictionary returned by <code class="docutils literal notranslate"><span class="pre">run_pure_separation</span></code>.</p></li>
+<li><p><strong>save_name</strong> – Output figure name saved inside <code class="docutils literal notranslate"><span class="pre">working_dir</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Created figure and axes.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[matplotlib.figure.Figure, matplotlib.axes.Axes]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdefectkit.traction_separation.TractionSeparationWorkflow.plot_h_separation">
+<span class="sig-name descname"><span class="pre">plot_h_separation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'h_traction_separation.png'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.traction_separation.TractionSeparationWorkflow.plot_h_separation" title="Link to this definition"></a></dt>
+<dd><p>Plot stress versus separation for H-decorated traction-separation runs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>results</strong> – Results dictionary returned by <code class="docutils literal notranslate"><span class="pre">run_h_separation</span></code>.</p></li>
+<li><p><strong>save_name</strong> – Output figure name saved inside <code class="docutils literal notranslate"><span class="pre">working_dir</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Created figure and axes.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[matplotlib.figure.Figure, matplotlib.axes.Axes]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-atomdefectkit.model_discovery">
+<span id="registry-helpers"></span><h2>Registry helpers<a class="headerlink" href="#module-atomdefectkit.model_discovery" title="Link to this heading"></a></h2>
+<p>Discovery of available MLIPs by querying the models directory.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="atomdefectkit.model_discovery.discover_models">
+<span class="sig-prename descclassname"><span class="pre">atomdefectkit.model_discovery.</span></span><span class="sig-name descname"><span class="pre">discover_models</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.model_discovery.discover_models" title="Link to this definition"></a></dt>
+<dd><p>Finds all available models in the models package.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of available model names</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p id="module-atomdefectkit.registry">Registry for storing and retrieving uMLIP models.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="atomdefectkit.registry.register_model">
+<span class="sig-prename descclassname"><span class="pre">atomdefectkit.registry.</span></span><span class="sig-name descname"><span class="pre">register_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdefectkit.registry.register_model" title="Link to this definition"></a></dt>
+<dd><p>Loads a uMLIP model and registers it with the simulator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Name of the model to register.</p></li>
+<li><p><strong>metadata</strong> (<em>dict</em><em> | </em><em>None</em><em>, </em><em>optional</em>) – Metadata for the model. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the model is already registered.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Decorator function that checks and logs the model registration.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Callable</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="getting-started.html" class="btn btn-neutral float-left" title="Getting started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Lei Zhang.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
