@@ -37,7 +37,21 @@ class BCCScrewDislocation(WorkingDirectoryMixin):
         self.dd_map_relaxed = None
         self.init_working_dir(working_dir, "screw_disloc")
 
+    def validate_cubic_elastic_constants(self):
+        """Validate cubic elastic constants before screw-dislocation setup."""
+        c11 = float(self.cij[0, 0])
+        c12 = float(self.cij[0, 1])
+        c44 = float(self.cij[3, 3])
+
+        if (c11 - c12) <= 0.0 or (c11 + 2.0 * c12) <= 0.0 or c44 <= 0.0:
+            raise ValueError(
+                "Elastic constants are mechanically unstable for cubic BCC "
+                f"(C11={c11:.6g}, C12={c12:.6g}, C44={c44:.6g} GPa); "
+                "skipping screw-dislocation workflow."
+            )
+
     def create_dislocation_object(self):
+        self.validate_cubic_elastic_constants()
         alat = uc.set_in_units(self.a0, "angstrom")
         C11 = uc.set_in_units(self.cij[0,0], "GPa")
         C12 = uc.set_in_units(self.cij[0,1], "GPa")

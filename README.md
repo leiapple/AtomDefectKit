@@ -26,14 +26,14 @@ The atomistic PACE calculator used for BCC potentials is available through the o
 
 ### Managing model environments with uv
 
-This project uses `uv` for Python and dependency management. The package supports Python 3.11, 3.12, and 3.13. If the system Python is not suitable, let `uv` install and pin Python:
+This project uses `uv` for Python and dependency management. The package is tested on Python 3.11, 3.12, and 3.13. If the system Python is not suitable, let `uv` install and pin Python:
 
 ```bash
 uv python install 3.11
 uv python pin 3.11
 ```
 
-The core package and most model backends can target Python 3.11-3.13. The
+The core package and most model backends are tested on Python 3.11-3.13. The
 optional `pace` extra currently depends on `pyace`, which should be treated as
 Python 3.11 only until its upstream packaging catches up.
 
@@ -43,7 +43,7 @@ Install the base environment with:
 uv sync
 ```
 
-When installed from PyPI, the equivalent base install will be:
+Once the package is published to PyPI, the equivalent base install will be:
 
 ```bash
 pip install atomdefectkit
@@ -68,7 +68,7 @@ uv sync --extra grace
 uv run --extra grace python scripts/run_tests_grace.py
 ```
 
-From PyPI, install one backend extra in a fresh environment:
+Once published to PyPI, install one backend extra in a fresh environment:
 
 ```bash
 pip install "atomdefectkit[fairchem]"
@@ -89,6 +89,42 @@ If you run `uv` from outside the repository, `--extra` has no effect unless you 
 uv sync --project /path/to/AtomDefectKit --extra upet
 uv run --project /path/to/AtomDefectKit --extra upet python /path/to/AtomDefectKit/scripts/run_tests_upet.py
 uv run --project /path/to/AtomDefectKit --extra upet python /path/to/AtomDefectKit/scripts/run_tests_upet_bcc_elements.py
+```
+
+If you do not want to run inside the repository checkout, create a clean working
+directory elsewhere and install directly from GitHub into a dedicated virtual
+environment. This is a good fit for HPC scratch space such as
+`/scratch-shared/$USER`:
+
+```bash
+mkdir -p /scratch-shared/$USER/atomdefectkit-upet
+cd /scratch-shared/$USER/atomdefectkit-upet
+
+uv python install 3.11
+uv venv --python 3.11
+source .venv/bin/activate
+
+export UV_CACHE_DIR=/scratch-shared/$USER/uv-cache
+export HF_HOME=/scratch-shared/$USER/huggingface
+export TORCH_HOME=/scratch-shared/$USER/torch
+export MPLCONFIGDIR=/scratch-shared/$USER/matplotlib
+
+uv pip install "atomdefectkit[upet] @ git+https://github.com/leiapple/AtomDefectKit.git@main"
+```
+
+Use the same pattern for other backends by swapping the extra:
+
+```bash
+uv pip install "atomdefectkit[mace] @ git+https://github.com/leiapple/AtomDefectKit.git@main"
+uv pip install "atomdefectkit[7net] @ git+https://github.com/leiapple/AtomDefectKit.git@main"
+uv pip install "atomdefectkit[fairchem] @ git+https://github.com/leiapple/AtomDefectKit.git@main"
+uv pip install "atomdefectkit[grace] @ git+https://github.com/leiapple/AtomDefectKit.git@main"
+```
+
+The `pace` backend should stay on Python 3.11:
+
+```bash
+uv pip install "atomdefectkit[pace] @ git+https://github.com/leiapple/AtomDefectKit.git@main"
 ```
 
 If you want to keep separate persistent virtual environments for different models, set `UV_PROJECT_ENVIRONMENT` per backend:
@@ -122,6 +158,16 @@ sbatch --export=ALL,MODEL=mace,RUN_MODE=single,ELEMENT=V,INITIAL_A0=2.997 script
 
 Set `PROJECT_DIR=/path/to/AtomDefectKit` in `--export` if you submit the job
 from outside the repository.
+
+For the five-element BCC batch scripts, the repository currently includes:
+
+- `scripts/run_tests_upet_bcc_elements.py`
+- `scripts/run_tests_7net_bcc_elements.py`
+- `scripts/run_tests_fairchem_bcc_elements.py`
+- `scripts/run_tests_grace_bcc_elements.py`
+
+These wrappers loop over `V`, `Nb`, `Ta`, `Mo`, and `W` with preset initial
+lattice guesses and call the corresponding single-element driver.
 
 Load a model calculator:
 
@@ -157,6 +203,11 @@ import atomdefectkit
 print(atomdefectkit.available_models())
 print(atomdefectkit.available_model_metadata())
 ```
+
+The package now bundles the reference DFT JSON files used by
+`BasicProperties.plot_comparison()`, so installed workflows can generate
+comparison plots even when they are launched from a different working directory
+or from outside the source tree.
 
 ### Release checklist
 

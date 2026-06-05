@@ -204,55 +204,58 @@ dislocation_system = workflow.create_screw_dislocation_workflow(
     working_dir=working_dir,
 )
 
-bcc_disl_init = dislocation_system.create_dislocation_object()
-# Relax the initial dislocation dipole configuration.
-progress("Relaxing initial screw-dislocation dipole")
-base_system_init, disl_system_init = dislocation_system.relax_dislocation_dipole(
-                                            bcc_disl_init, 
-                                            disloc_center=[0, 0, 0], 
-                                            fmax=0.005, 
-                                            optimizer='FIRE',
-                                            logfile="initial_fire_dislocation_relax.log",
-                                            )
+try:
+    bcc_disl_init = dislocation_system.create_dislocation_object()
+    # Relax the initial dislocation dipole configuration.
+    progress("Relaxing initial screw-dislocation dipole")
+    base_system_init, disl_system_init = dislocation_system.relax_dislocation_dipole(
+                                                bcc_disl_init,
+                                                disloc_center=[0, 0, 0],
+                                                fmax=0.005,
+                                                optimizer='FIRE',
+                                                logfile="initial_fire_dislocation_relax.log",
+                                                )
 
-# Convert the relaxed atomman system to ASE for downstream workflows.
+    # Convert the relaxed atomman system to ASE for downstream workflows.
 
-dislocation_dipole_ase_initial, properties = disl_system_init.dump('ase_Atoms', return_prop=True)
-# Save the differential-displacement map for the initial core location.
-progress("Plotting initial differential-displacement map")
-dislocation_system.plot_differential_displacement_map(bcc_disl_init, 
-                                                      base_system_init, 
-                                                      disl_system_init                                                      
-                                                      )
+    dislocation_dipole_ase_initial, properties = disl_system_init.dump('ase_Atoms', return_prop=True)
+    # Save the differential-displacement map for the initial core location.
+    progress("Plotting initial differential-displacement map")
+    dislocation_system.plot_differential_displacement_map(bcc_disl_init,
+                                                          base_system_init,
+                                                          disl_system_init
+                                                          )
 
-# Repeat for the displaced final-state core configuration.
-bcc_disl_final = dislocation_system.create_dislocation_object()
+    # Repeat for the displaced final-state core configuration.
+    bcc_disl_final = dislocation_system.create_dislocation_object()
 
-progress("Relaxing final screw-dislocation dipole")
-base_system_final, disl_system_final = dislocation_system.relax_dislocation_dipole(
-                                            bcc_disl_final, 
-                                            disloc_center=[a0_fit*np.sqrt(6)/3, 0, 0], 
-                                            fmax=0.005, 
-                                            optimizer='FIRE',
-                                            logfile="final_fire_dislocation_relax.log",
-                                            )
-dislocation_dipole_ase_final, properties = disl_system_final.dump('ase_Atoms', return_prop=True)
+    progress("Relaxing final screw-dislocation dipole")
+    base_system_final, disl_system_final = dislocation_system.relax_dislocation_dipole(
+                                                bcc_disl_final,
+                                                disloc_center=[a0_fit*np.sqrt(6)/3, 0, 0],
+                                                fmax=0.005,
+                                                optimizer='FIRE',
+                                                logfile="final_fire_dislocation_relax.log",
+                                                )
+    dislocation_dipole_ase_final, properties = disl_system_final.dump('ase_Atoms', return_prop=True)
 
-# Save the differential-displacement map for the final core location.
-progress("Plotting final differential-displacement map")
-dislocation_system.plot_differential_displacement_map(bcc_disl_final, 
-                                                      base_system_final, 
-                                                      disl_system_final, 
-                                                      )
+    # Save the differential-displacement map for the final core location.
+    progress("Plotting final differential-displacement map")
+    dislocation_system.plot_differential_displacement_map(bcc_disl_final,
+                                                          base_system_final,
+                                                          disl_system_final,
+                                                          )
 
-progress("Running screw-dislocation NEB")
-bcc_screw_neb = BCCScrewDislocPeierlsBarrier(dislocation_dipole_ase_initial, 
-                                             dislocation_dipole_ase_final, 
-                                             calc, model_name='MACE-OMAT', 
-                                             Nreplica=11, 
-                                             optimizer='FIRE', 
-                                             working_dir=f'{working_dir}/')
-bcc_screw_neb.relax_initial_final()
-bcc_screw_neb.run_neb(fmax=0.005, spring_constant=0.1)
-bcc_screw_neb.plot_barrier(element=f'{elem}', compare_vasp=False)
+    progress("Running screw-dislocation NEB")
+    bcc_screw_neb = BCCScrewDislocPeierlsBarrier(dislocation_dipole_ase_initial,
+                                                 dislocation_dipole_ase_final,
+                                                 calc, model_name='MACE-OMAT',
+                                                 Nreplica=11,
+                                                 optimizer='FIRE',
+                                                 working_dir=f'{working_dir}/')
+    bcc_screw_neb.relax_initial_final()
+    bcc_screw_neb.run_neb(fmax=0.005, spring_constant=0.1)
+    bcc_screw_neb.plot_barrier(element=f'{elem}', compare_vasp=False)
+except ValueError as exc:
+    progress(f"Skipping screw-dislocation workflow: {exc}")
 progress("MACE workflow complete")
