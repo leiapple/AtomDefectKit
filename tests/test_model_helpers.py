@@ -1,6 +1,7 @@
 import re
 
 from atomdefectkit.model_errors import format_model_error, format_unknown_model_error
+from atomdefectkit.models.grace import GRACE_MODEL_CHOICES, resolve_grace_model_name
 from atomdefectkit.registry import MODEL_METADATA, MODEL_REGISTRY, register_model
 from atomdefectkit.utils.progress import progress
 
@@ -51,3 +52,18 @@ def test_progress_prints_timestamped_message(capsys):
     output = capsys.readouterr().out.strip()
     assert output.endswith("hello world")
     assert re.match(r"^\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\] hello world$", output)
+
+
+def test_resolve_grace_model_name_supports_explicit_foundation_name():
+    model_name = resolve_grace_model_name({"model_name": "GRACE-2L-SMAX-OMAT-large"})
+
+    assert model_name == "GRACE-2L-SMAX-OMAT-large"
+    assert "GRACE-2L-SMAX-OMAT-large" in GRACE_MODEL_CHOICES
+
+
+def test_resolve_grace_model_name_preserves_legacy_mapping():
+    model_name = resolve_grace_model_name(
+        {"model_task": "oam", "model_size": "large", "num_layers": 2}
+    )
+
+    assert model_name == "GRACE-2L-OMAT-large-ft-AM"

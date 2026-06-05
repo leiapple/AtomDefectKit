@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from pathlib import Path
 
 from ase.build.tools import cut, rotate
 from ase.constraints import FixedLine
@@ -101,6 +102,26 @@ class StackingFaultWorkflow(WorkingDirectoryMixin):
         self.info = info
         self.optimizer = normalize_optimizer_name(optimizer)
         self.init_working_dir(working_dir)
+
+    @staticmethod
+    def _project_root() -> Path:
+        return Path(__file__).resolve().parents[2]
+
+    def _reference_curve_path(self, miller) -> Path | None:
+        miller_label = "".join(str(abs(int(index))) for index in miller)
+        candidate = self._project_root() / "data" / "stacking_faults" / f"{self.formula}_{miller_label}.csv"
+        return candidate if candidate.exists() else None
+
+    @staticmethod
+    def _format_reference_curve(reference_curve: np.ndarray, miller) -> tuple[np.ndarray, np.ndarray]:
+        x_values = reference_curve[:, 0]
+        y_values = reference_curve[:, 1] * 1000
+
+        miller_abs = tuple(abs(int(index)) for index in miller)
+        if miller_abs == (1, 1, 2):
+            y_values = y_values[::-1]
+
+        return x_values, y_values
 
     def _relax(self, atoms, fmax=0.01, steps=1000, logfile="stacking_fault_relax.log"):
         """Relax a structure with the workflow calculator and optimizer.
@@ -247,8 +268,22 @@ class StackingFaultWorkflow(WorkingDirectoryMixin):
                 file=file,
             )
 
+        curves = [{"x": coords, "y": energies * 1000, "marker": "o", "label": self.info}]
+        reference_path = self._reference_curve_path(miller)
+        if reference_path is not None:
+            reference_curve = np.loadtxt(reference_path, delimiter=",")
+            reference_x, reference_y = self._format_reference_curve(reference_curve, miller)
+            curves.append(
+                {
+                    "x": reference_x,
+                    "y": reference_y,
+                    "marker": "s",
+                    "label": "DFT",
+                }
+            )
+
         plot_xy_curves(
-            curves=[{"x": coords, "y": energies * 1000, "marker": "o", "label": self.info}],
+            curves=curves,
             xlabel="Reaction Coordinate",
             ylabel="Energy (meV/A^2)",
             title="Stacking-Fault Curve",

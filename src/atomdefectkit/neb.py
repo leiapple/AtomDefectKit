@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from ase.filters import FrechetCellFilter
 from ase.io import read
 from ase.mep import NEB
@@ -32,6 +34,14 @@ class BCCScrewDislocPeierlsBarrier(WorkingDirectoryMixin):
         self.calc = calc
         self.optimizer = normalize_optimizer_name(optimizer)
         self.init_working_dir(working_dir, "screw_disloc")
+
+    @staticmethod
+    def _project_root() -> Path:
+        return Path(__file__).resolve().parents[2]
+
+    def _reference_barrier_path(self, element: str) -> Path | None:
+        candidate = self._project_root() / "data" / "PeierlsPotential" / f"{element}_bcc_VASP.csv"
+        return candidate if candidate.exists() else None
 
     def relax_initial_final(self, fmax=0.001, steps=10000):
         for label, config in [("initial", self.initial_config), ("final", self.final_config)]:
@@ -106,7 +116,7 @@ class BCCScrewDislocPeierlsBarrier(WorkingDirectoryMixin):
         trajectory="neb.traj",
         write_poscar=True,
         save_csv=True,
-        compare_vasp=False,
+        compare_vasp=True,
         vasp_data_file=None,
     ):
         images = read(f"{self.path(trajectory)}@-{self.Nreplica}:")
@@ -129,11 +139,13 @@ class BCCScrewDislocPeierlsBarrier(WorkingDirectoryMixin):
 
         fig, ax = plt.subplots(figsize=(4, 4))
         ax.plot(reaction_coords, energies, "-o", label=self.model_name)
-        if compare_vasp and vasp_data_file:
-            vasp_data = np.loadtxt(vasp_data_file)
-            vasp_reaction_coords = vasp_data[:, 1] / max(vasp_data[:, 1])
-            vasp_energies = vasp_data[:, 2] * 1000 / 2
-            ax.plot(vasp_reaction_coords, vasp_energies, "-s", label="VASP")
+        if compare_vasp:
+            reference_path = Path(vasp_data_file) if vasp_data_file else self._reference_barrier_path(element)
+            if reference_path is not None and reference_path.exists():
+                reference_data = np.loadtxt(reference_path)
+                reference_reaction_coords = reference_data[:, 1] / max(reference_data[:, 1])
+                reference_energies = reference_data[:, 2] * 1000 / 2
+                ax.plot(reference_reaction_coords, reference_energies, "-s", label="DFT")
         ax.set_xlabel("Reaction coordinate")
         ax.set_ylabel("Energy (meV)")
         ax.set_title(f"Peierls Barrier in {element} predicted by {self.model_name} + {self.optimizer}")

@@ -243,7 +243,7 @@ try:
                                                  working_dir=working_dir)
     bcc_screw_neb.relax_initial_final()
     bcc_screw_neb.run_neb(fmax=0.005, spring_constant=0.1)
-    bcc_screw_neb.plot_barrier(element=f'{elem}', compare_vasp=False)
+    bcc_screw_neb.plot_barrier(element=f'{elem}')
 except ValueError as exc:
     progress(f"Skipping screw-dislocation workflow: {exc}")
 progress("PACE workflow complete")

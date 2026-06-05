@@ -20,6 +20,14 @@ AtomDefectKit/
 
 ```
 
+### Model registration note
+
+The registry-based model-loading pattern used in `src/atomdefectkit/models/`
+and `atomdefectkit.load_model()` follows the same general idea used in
+[MoltenSaltCalc](https://github.com/leiapple/MoltenSaltCalc/tree/main), where
+individual model modules register themselves and are then exposed through a
+shared loader interface.
+
 ### PACE calculator note
 
 The atomistic PACE calculator used for BCC potentials is available through the optional `pace` dependency group. It is installed from the upstream `ICAMS/python-ace` repository instead of the unrelated package that is published on PyPI as `pyace`.
@@ -203,6 +211,10 @@ import atomdefectkit
 print(atomdefectkit.available_models())
 print(atomdefectkit.available_model_metadata())
 ```
+
+If you want to add a new backend, the easiest path is to follow the existing
+per-model modules in `src/atomdefectkit/models/` and keep the same
+registry-based pattern.
 
 The package now bundles the reference DFT JSON files used by
 `BasicProperties.plot_comparison()`, so installed workflows can generate

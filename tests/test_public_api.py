@@ -27,6 +27,7 @@ def test_available_model_metadata_imports_lazy_registrations():
     assert EXPECTED_MODELS.issubset(metadata)
     assert metadata["pace"]["potential_file"]["required"] is True
     assert metadata["fairchem"]["model_task"]["default"] == "omat"
+    assert "GRACE-2L-SMAX-OMAT-large" in metadata["grace"]["model_name"]["choices"]
 
 
 def test_load_model_reports_unknown_model():

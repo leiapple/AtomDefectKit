@@ -159,7 +159,7 @@ SF.stacking_fault(
     miller=(1, 1, 2),
     distance=a0_fit/2,
     layers=40,
-    num_steps=100,
+    num_steps=40,
     fmax=0.005,
     steps=1000,
     write_xyz=True,
@@ -255,7 +255,7 @@ try:
                                                  working_dir=f'{working_dir}/')
     bcc_screw_neb.relax_initial_final()
     bcc_screw_neb.run_neb(fmax=0.005, spring_constant=0.1)
-    bcc_screw_neb.plot_barrier(element=f'{elem}', compare_vasp=False)
+    bcc_screw_neb.plot_barrier(element=f'{elem}')
 except ValueError as exc:
     progress(f"Skipping screw-dislocation workflow: {exc}")
 progress("MACE workflow complete")
