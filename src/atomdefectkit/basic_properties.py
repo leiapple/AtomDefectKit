@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import ast
 import importlib
+from importlib import resources
 import json
 import warnings
 import os 
@@ -622,10 +623,26 @@ class BasicProperties(WorkingDirectoryMixin):
         str
             Path to the saved figure.
         """
+        def _resolve_packaged_reference(path_like):
+            """Resolve bundled DFT reference JSONs when a relative path is unavailable."""
+            candidate = os.fspath(path_like)
+            if os.path.exists(candidate):
+                return candidate
+
+            filename = os.path.basename(candidate)
+            if not filename.startswith("dft_") or not filename.endswith(".json"):
+                return candidate
+
+            packaged = resources.files("atomdefectkit.data.basic_properties").joinpath(filename)
+            if packaged.is_file():
+                return packaged
+            return candidate
+
         def _load_data(data_or_path):
             """Normalize either a mapping or a JSON file into the plotting schema."""
             if isinstance(data_or_path, (str, os.PathLike)):
-                with open(data_or_path, "r", encoding="utf-8") as file:
+                resolved_path = _resolve_packaged_reference(data_or_path)
+                with open(resolved_path, "r", encoding="utf-8") as file:
                     data = json.load(file)
             else:
                 data = dict(data_or_path)
@@ -779,3 +796,4 @@ class BasicProperties(WorkingDirectoryMixin):
         plt.tight_layout(rect=[0, 0, 1, 0.96])
         output_path = self.path(save_name)
         fig.savefig(output_path, dpi=300, format="pdf")
+        return output_path
