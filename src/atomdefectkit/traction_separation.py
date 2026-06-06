@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from importlib import resources
 from pathlib import Path
 
 from ase import Atom, Atoms
@@ -129,6 +130,18 @@ class TractionSeparationWorkflow(WorkingDirectoryMixin):
         element = self.atoms[0].symbol
         surface_label = "".join(str(abs(int(index))) for index in self.surface_index)
         filename = f"ts_{element}_{surface_label}.csv"
+
+        for package_name in (
+            "atomdefectkit.data.TractionSeparation",
+            "atomdefectkit.data.traction_separation",
+        ):
+            try:
+                packaged = resources.files(package_name).joinpath(filename)
+            except ModuleNotFoundError:
+                continue
+            if packaged.is_file():
+                return Path(packaged)
+
         for directory_name in ("TractionSeparation", "traction_separation"):
             candidate = self._project_root() / "data" / directory_name / filename
             if candidate.exists():

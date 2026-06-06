@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from importlib import resources
 from pathlib import Path
 
 from ase.build.tools import cut, rotate
@@ -109,8 +110,21 @@ class StackingFaultWorkflow(WorkingDirectoryMixin):
 
     def _reference_curve_path(self, miller) -> Path | None:
         miller_label = "".join(str(abs(int(index))) for index in miller)
+        filename = f"{self.formula}_{miller_label}.csv"
+
+        for package_name in (
+            "atomdefectkit.data.StackingFaults",
+            "atomdefectkit.data.stacking_faults",
+        ):
+            try:
+                packaged = resources.files(package_name).joinpath(filename)
+            except ModuleNotFoundError:
+                continue
+            if packaged.is_file():
+                return Path(packaged)
+
         for directory_name in ("StackingFaults", "stacking_faults"):
-            candidate = self._project_root() / "data" / directory_name / f"{self.formula}_{miller_label}.csv"
+            candidate = self._project_root() / "data" / directory_name / filename
             if candidate.exists():
                 return candidate
         return None

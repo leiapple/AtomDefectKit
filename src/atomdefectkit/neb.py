@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+from importlib import resources
 from pathlib import Path
 
 from ase.filters import FrechetCellFilter
+from ase import units
 from ase.io import read
 from ase.mep import NEB
 import matplotlib.pyplot as plt
@@ -41,7 +43,20 @@ class BCCScrewDislocPeierlsBarrier(WorkingDirectoryMixin):
         return Path(__file__).resolve().parents[2]
 
     def _reference_barrier_path(self, element: str) -> Path | None:
-        candidate = self._project_root() / "data" / "PeierlsPotential" / f"{element}_bcc_VASP.csv"
+        filename = f"{element}_bcc_VASP.csv"
+
+        for package_name in (
+            "atomdefectkit.data.PeierlsPotential",
+            "atomdefectkit.data.peierls_potential",
+        ):
+            try:
+                packaged = resources.files(package_name).joinpath(filename)
+            except ModuleNotFoundError:
+                continue
+            if packaged.is_file():
+                return Path(packaged)
+
+        candidate = self._project_root() / "data" / "PeierlsPotential" / filename
         return candidate if candidate.exists() else None
 
     def relax_initial_final(self, fmax=0.001, steps=10000):
@@ -169,6 +184,8 @@ class BCCScrewDislocPeierlsBarrier(WorkingDirectoryMixin):
         save_csv=True,
         csv_name="dislocation_line_profile.csv",
         figure_name="dislocation_line_profile.png",
+        stress_csv_name="dislocation_line_stress_profile.csv",
+        use_stored_results=False,
     ):
         """Plot the screw-core trajectory extracted from NEB image stresses.
 
@@ -181,6 +198,11 @@ class BCCScrewDislocPeierlsBarrier(WorkingDirectoryMixin):
             save_csv: Whether to save the derived profile as a CSV file.
             csv_name: Output CSV filename saved inside ``working_dir``.
             figure_name: Output figure filename saved inside ``working_dir``.
+            stress_csv_name: Output CSV containing raw stress and delta values.
+            use_stored_results: When True, prefer the stored ``SinglePointCalculator``
+                results carried by ``neb.traj`` images. By default this method
+                follows the original reference workflow and recomputes the stresses
+                with ``self.calc``.
 
         Returns:
             tuple[matplotlib.figure.Figure, matplotlib.axes.Axes, pandas.DataFrame]:
@@ -195,16 +217,25 @@ class BCCScrewDislocPeierlsBarrier(WorkingDirectoryMixin):
         line_direction /= np.linalg.norm(line_direction)
 
         rotation = np.array([slip_direction, slip_plane, line_direction])
-        C6 = rotate_elastic_constants(np.asarray(Cij, dtype=float), rotation)
-
+        C6 = rotate_elastic_constants(np.asarray(Cij, dtype=float), rotation) * units.GPa
+        
         images = read(f"{self.path(trajectory)}@-{self.Nreplica}:")
         delta_x_list = []
         delta_y_list = []
         burgers_vector_magnitude = a0_eq * np.sqrt(3.0) / 2.0
 
-        for image in images:
-            image.calc = self.calc
-            stress = image.get_stress(voigt=False)
+        raw_rows = []
+        for i, image in enumerate(images):
+            if use_stored_results and image.calc is not None:
+                try:
+                    stress = image.get_stress(voigt=False)
+                except Exception:  # pylint: disable=broad-exception-caught
+                    image.calc = self.calc
+                    stress = image.get_stress(voigt=False)
+            else:
+                image.calc = self.calc
+                stress = image.get_stress(voigt=False)
+
             area = np.linalg.norm(np.cross(image.get_cell()[0], image.get_cell()[1]))
             delta_x = -(area / burgers_vector_magnitude) * (
                 (C6[5, 5] * stress[1, 2] + C6[0, 4] * stress[0, 1])
@@ -216,9 +247,23 @@ class BCCScrewDislocPeierlsBarrier(WorkingDirectoryMixin):
             )
             delta_x_list.append(delta_x)
             delta_y_list.append(delta_y)
+            raw_rows.append(
+                {
+                    "image_index": i,
+                    "area_A2": area,
+                    "sigma_xx_GPa": stress[0, 0],
+                    "sigma_yy_GPa": stress[1, 1],
+                    "sigma_zz_GPa": stress[2, 2],
+                    "sigma_xy_GPa": stress[0, 1],
+                    "sigma_xz_GPa": stress[0, 2],
+                    "sigma_yz_GPa": stress[1, 2],
+                    "delta_x_A": delta_x,
+                    "delta_y_A": delta_y,
+                }
+            )
 
         path_length = a0_eq * np.sqrt(6.0) / 3.0
-        x_values = np.arange(len(delta_y_list), dtype=float) * path_length / len(delta_y_list)
+        x_values = np.arange(0.0, path_length, path_length / len(delta_y_list))
         y_values = -(np.asarray(delta_y_list) - delta_y_list[0]) / 2.0
 
         min_y_idx = int(np.argmin(y_values))
@@ -239,6 +284,7 @@ class BCCScrewDislocPeierlsBarrier(WorkingDirectoryMixin):
 
         if save_csv:
             profile.to_csv(self.path(csv_name), index=False)
+            pd.DataFrame(raw_rows).to_csv(self.path(stress_csv_name), index=False)
 
         fig, ax = plt.subplots(figsize=(5, 4))
         ax.plot(x_values, y_values, "-o", label="Core trajectory")
