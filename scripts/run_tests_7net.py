@@ -256,6 +256,7 @@ try:
     bcc_screw_neb.relax_initial_final()
     bcc_screw_neb.run_neb(fmax=0.005, spring_constant=0.1)
     bcc_screw_neb.plot_barrier(element=f'{elem}')
+    bcc_screw_neb.plot_core_trajectory(Cij=Cij, a0_eq=a0_fit)
 except ValueError as exc:
     progress(f"Skipping screw-dislocation workflow: {exc}")
 progress("7net workflow complete")

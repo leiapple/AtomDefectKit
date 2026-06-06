@@ -29,8 +29,8 @@ progress(f"Starting GRACE workflow for {elem} with initial a0={initial_a0} A")
 progress("Loading GRACE calculator")
 workflow = BasicProperties(
     model_name="GRACE",
-    model_parameters={"model_size": "small", "num_layers": 1, "model_task": "OAM"},
-    device="cuda",
+    model_parameters={"model_size": "small", "num_layers": 1, "model_task": "OMAT"},
+    device="cpu",
     working_dir=working_dir,
 )
 calc = workflow.get_calculator()
@@ -253,6 +253,7 @@ try:
     bcc_screw_neb.relax_initial_final()
     bcc_screw_neb.run_neb(fmax=0.005, spring_constant=0.1)
     bcc_screw_neb.plot_barrier(element=f'{elem}')
+    bcc_screw_neb.plot_core_trajectory(Cij=Cij, a0_eq=a0_fit)
 except ValueError as exc:
     progress(f"Skipping screw-dislocation workflow: {exc}")
 progress("GRACE workflow complete")
