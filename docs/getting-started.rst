@@ -42,7 +42,7 @@ Quick example
 .. code-block:: python
 
    import atomdefectkit
-   from atomdefectkit.basic_properties import BasicProperties
+   from atomdefectkit.BasicProperties import BasicProperties
 
    calc = atomdefectkit.load_model(
        "pace",

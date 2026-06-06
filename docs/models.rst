@@ -12,7 +12,7 @@ The public entry points are:
 * ``atomdefectkit.available_models()``
 * ``atomdefectkit.available_model_metadata()``
 * ``atomdefectkit.load_model()``
-* ``atomdefectkit.basic_properties.BasicProperties(model_name=...)``
+* ``atomdefectkit.BasicProperties.BasicProperties(model_name=...)``
 
 Listing available models
 ------------------------
@@ -45,7 +45,7 @@ Creating a workflow from a model name
 
 .. code-block:: python
 
-   from atomdefectkit.basic_properties import BasicProperties
+   from atomdefectkit.BasicProperties import BasicProperties
 
    workflow = BasicProperties(
        model_name="upet",
@@ -64,7 +64,7 @@ model registry:
 
 .. code-block:: python
 
-   from atomdefectkit.basic_properties import BasicProperties
+   from atomdefectkit.BasicProperties import BasicProperties
 
    workflow = BasicProperties(
        calculator=existing_calc,

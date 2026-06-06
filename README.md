@@ -181,7 +181,7 @@ Load a model calculator:
 
 ```python
 import atomdefectkit
-from atomdefectkit.basic_properties import BasicProperties
+from atomdefectkit.BasicProperties import BasicProperties
 
 calc = atomdefectkit.load_model(
     "pace",
@@ -226,6 +226,7 @@ or from outside the source tree.
 The repository now includes a basic Read the Docs setup based on the v2
 configuration file format:
 
+- Documentation website: [atomdefectkit.readthedocs.io](https://atomdefectkit.readthedocs.io/)
 - `.readthedocs.yaml`
 - `docs/conf.py`
 - `docs/index.rst`

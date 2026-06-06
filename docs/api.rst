@@ -14,7 +14,7 @@ Top-level package
 Core workflows
 --------------
 
-.. automodule:: atomdefectkit.basic_properties
+.. automodule:: atomdefectkit.BasicProperties
    :members:
    :undoc-members:
 
@@ -26,11 +26,11 @@ Core workflows
    :members:
    :undoc-members:
 
-.. automodule:: atomdefectkit.stacking_fault
+.. automodule:: atomdefectkit.StackingFaults
    :members:
    :undoc-members:
 
-.. automodule:: atomdefectkit.traction_separation
+.. automodule:: atomdefectkit.TractionSeparation
    :members:
    :undoc-members:
 

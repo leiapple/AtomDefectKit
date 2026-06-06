@@ -2,7 +2,7 @@
 
 import argparse
 
-from atomdefectkit.basic_properties import BasicProperties
+from atomdefectkit.BasicProperties import BasicProperties
 from atomdefectkit.neb import BCCScrewDislocPeierlsBarrier
 
 import numpy as np
@@ -104,7 +104,7 @@ workflow.save_properties(
 
 # Plot the calculated properties against the stored DFT reference data.
 progress("Plotting basic-property comparison")
-workflow.plot_comparison(f"{working_dir}/{elem}_basicProp.json", f'../data/basic_properties/dft_{elem}.json')
+workflow.plot_comparison(f"{working_dir}/{elem}_basicProp.json", f'../data/BasicProperties/dft_{elem}.json')
 
 # calculate phonon dispersion
 progress("Calculating phonon dispersion")

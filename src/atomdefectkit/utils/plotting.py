@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import matplotlib.pyplot as plt
 
+DEFAULT_TITLE_FONTSIZE = 12
+
 
 def plot_xy_curves(
     curves,
@@ -43,7 +45,7 @@ def plot_xy_curves(
         )
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
-    ax.set_title(title)
+    ax.set_title(title, fontsize=DEFAULT_TITLE_FONTSIZE)
     ax.grid(True, alpha=grid_alpha)
     if show_legend:
         ax.legend()

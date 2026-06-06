@@ -1,7 +1,13 @@
 import importlib
 
+from atomdefectkit.BasicProperties import BasicProperties
 from atomdefectkit.model_discovery import discover_models
 from atomdefectkit.registry import MODEL_METADATA, MODEL_REGISTRY
+from atomdefectkit.StackingFaults import StackingFaultCurve, StackingFaultWorkflow
+from atomdefectkit.TractionSeparation import (
+    TractionSeparationCurve,
+    TractionSeparationWorkflow,
+)
 
 
 def _import_model(model_name: str) -> None:

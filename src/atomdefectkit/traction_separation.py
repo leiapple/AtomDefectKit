@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from pathlib import Path
 
 from ase import Atom, Atoms
 from ase.filters import UnitCellFilter
@@ -116,6 +117,23 @@ class TractionSeparationWorkflow(WorkingDirectoryMixin):
                 raise ValueError(
                     "surface_index must be one of (1, 0, 0), (1, 1, 0), or (1, 1, 1)."
                 )
+
+    @staticmethod
+    def _project_root() -> Path:
+        return Path(__file__).resolve().parents[2]
+
+    def _reference_curve_path(self) -> Path | None:
+        if self.surface_index is None:
+            return None
+
+        element = self.atoms[0].symbol
+        surface_label = "".join(str(abs(int(index))) for index in self.surface_index)
+        filename = f"ts_{element}_{surface_label}.csv"
+        for directory_name in ("TractionSeparation", "traction_separation"):
+            candidate = self._project_root() / "data" / directory_name / filename
+            if candidate.exists():
+                return candidate
+        return None
 
     def generate_tetra_sites(self, cell: np.ndarray, nx: int, ny: int, eps: float = 1e-3):
         """Tile the reference tetrahedral H sites across the in-plane supercell.
@@ -597,7 +615,7 @@ class TractionSeparationWorkflow(WorkingDirectoryMixin):
         ax.plot(xx, np.zeros_like(xx), "k-", lw=1.0, alpha=0.5)
         ax.set_xlabel("Separation distance (Å)")
         ax.set_ylabel("Normal stress (GPa)")
-        ax.set_title("TS curves with effective H coverage")
+        ax.set_title("TS curves with effective H coverage", fontsize=12)
         ax.set_xlim(left=0.0)
         sm = cm.ScalarMappable(cmap=cmap, norm=norm)
         sm.set_array([])
@@ -617,7 +635,7 @@ class TractionSeparationWorkflow(WorkingDirectoryMixin):
         ax.set_xticks(thetas, [f"{theta:.2f}" for theta in thetas])
         ax.set_xlabel(r"Effective H coverage $\theta$")
         ax.set_ylabel("Surface energy (J/m²)")
-        ax.set_title("Surface energy from TS integration vs effective coverage")
+        ax.set_title("Surface energy from TS integration vs effective coverage", fontsize=12)
         fig.tight_layout()
         fig.savefig(self.path("surface_energy_bar_theta.png"), dpi=300)
         plt.close(fig)
@@ -627,7 +645,7 @@ class TractionSeparationWorkflow(WorkingDirectoryMixin):
         ax.plot(thetas, sigma_vals, marker="o", linestyle="-")
         ax.set_xlabel(r"Effective H coverage $\theta$")
         ax.set_ylabel(r"Maximum normal stress $\sigma_\mathrm{max}$ (GPa)")
-        ax.set_title(r"$\theta$–$\sigma_\mathrm{max}$ relation from TS curves")
+        ax.set_title(r"$\theta$–$\sigma_\mathrm{max}$ relation from TS curves", fontsize=12)
         fig.tight_layout()
         fig.savefig(self.path("theta_vs_sigma_max.png"), dpi=300)
         plt.close(fig)
@@ -645,13 +663,27 @@ class TractionSeparationWorkflow(WorkingDirectoryMixin):
         x = results["midpoint_separation"]
         y = results["traction"]
 
+        curves = [{"x": x, "y": y, "marker": "o", "label": "Calculated"}]
+        reference_path = self._reference_curve_path()
+        if reference_path is not None:
+            reference_data = np.genfromtxt(reference_path, delimiter=",", names=True)
+            curves.append(
+                {
+                    "x": reference_data["separation"],
+                    "y": reference_data["traction"],
+                    "marker": "s",
+                    "label": "DFT",
+                }
+            )
+
         fig, ax = plot_xy_curves(
-            curves=[{"x": x, "y": y, "marker": "o"}],
+            curves=curves,
             xlabel="Separation distance (Å)",
             ylabel="Normal stress (GPa)",
             title="Traction-Separation Curve",
             save_path=self.path(save_name),
             figsize=(6, 4),
+            show_legend=len(curves) > 1,
         )
         return fig, ax
 

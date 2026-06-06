@@ -109,8 +109,11 @@ class StackingFaultWorkflow(WorkingDirectoryMixin):
 
     def _reference_curve_path(self, miller) -> Path | None:
         miller_label = "".join(str(abs(int(index))) for index in miller)
-        candidate = self._project_root() / "data" / "stacking_faults" / f"{self.formula}_{miller_label}.csv"
-        return candidate if candidate.exists() else None
+        for directory_name in ("StackingFaults", "stacking_faults"):
+            candidate = self._project_root() / "data" / directory_name / f"{self.formula}_{miller_label}.csv"
+            if candidate.exists():
+                return candidate
+        return None
 
     @staticmethod
     def _format_reference_curve(reference_curve: np.ndarray, miller) -> tuple[np.ndarray, np.ndarray]:

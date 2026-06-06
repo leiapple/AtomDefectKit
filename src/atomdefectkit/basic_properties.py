@@ -171,7 +171,7 @@ class BasicProperties(WorkingDirectoryMixin):
         Returns:
             StackingFaultWorkflow: Workflow instance sharing this calculator.
         """
-        from atomdefectkit.stacking_fault import StackingFaultWorkflow
+        from atomdefectkit.StackingFaults import StackingFaultWorkflow
 
         return StackingFaultWorkflow(
             atoms=atoms,
@@ -203,7 +203,7 @@ class BasicProperties(WorkingDirectoryMixin):
         Returns:
             TractionSeparationWorkflow: Workflow instance sharing this calculator.
         """
-        from atomdefectkit.traction_separation import TractionSeparationWorkflow
+        from atomdefectkit.TractionSeparation import TractionSeparationWorkflow
 
         return TractionSeparationWorkflow(
             atoms=atoms,
@@ -482,7 +482,7 @@ class BasicProperties(WorkingDirectoryMixin):
         ax.set_ylabel("Frequency (THz)")
         primitive_formula = "".join(phonon.primitive.symbols)
         title = info.get("title") or info.get("label") or f"{primitive_formula} phonon dispersion"
-        ax.set_title(title)
+        ax.set_title(title, fontsize=12)
         ax.set_xlim(segment_distances[0][0], segment_distances[-1][-1])
         fig.tight_layout()
 
@@ -633,9 +633,16 @@ class BasicProperties(WorkingDirectoryMixin):
             if not filename.startswith("dft_") or not filename.endswith(".json"):
                 return candidate
 
-            packaged = resources.files("atomdefectkit.data.basic_properties").joinpath(filename)
-            if packaged.is_file():
-                return packaged
+            for package_name in (
+                "atomdefectkit.data.BasicProperties",
+                "atomdefectkit.data.basic_properties",
+            ):
+                try:
+                    packaged = resources.files(package_name).joinpath(filename)
+                except ModuleNotFoundError:
+                    continue
+                if packaged.is_file():
+                    return packaged
             return candidate
 
         def _load_data(data_or_path):
@@ -660,7 +667,7 @@ class BasicProperties(WorkingDirectoryMixin):
 
         fig, axes = plt.subplots(2, 2, figsize=(10, 10))
         title = "Calculated Data Summary" if dft_data is None else "Comparison of Calculated Data with DFT Data"
-        fig.suptitle(title, fontsize=16, fontweight="bold")
+        fig.suptitle(title, fontsize=14, fontweight="bold")
         plt.rcParams.update({"font.size": 12})
 
         calculated_energies = np.array(calculated_data["energies"])
@@ -684,7 +691,7 @@ class BasicProperties(WorkingDirectoryMixin):
             )
         axes[0, 0].set_xlabel("Volume (Å³)", fontsize=16)
         axes[0, 0].set_ylabel("Energy (eV)", fontsize=16)
-        axes[0, 0].set_title("Energy-Volume Curve", fontsize=18, fontweight="bold")
+        axes[0, 0].set_title("Energy-Volume Curve", fontsize=14, fontweight="bold")
         axes[0, 0].legend(fontsize=14)
         axes[0, 0].grid(True, linestyle="--", alpha=0.7)
 
@@ -700,7 +707,7 @@ class BasicProperties(WorkingDirectoryMixin):
             axes[0, 1].bar(x + width / 2, dft_cij, width, label="DFT", color="orange", alpha=0.8)
         axes[0, 1].set_xlabel("Elastic Constants", fontsize=16)
         axes[0, 1].set_ylabel("Value (GPa)", fontsize=16)
-        axes[0, 1].set_title("Elastic Constants Comparison", fontsize=18, fontweight="bold")
+        axes[0, 1].set_title("Elastic Constants Comparison", fontsize=14, fontweight="bold")
         axes[0, 1].set_xticks(x)
         axes[0, 1].set_xticklabels(elastic_labels, fontsize=14)
         axes[0, 1].legend(fontsize=14)
@@ -741,7 +748,7 @@ class BasicProperties(WorkingDirectoryMixin):
             )
         axes[1, 0].set_xlabel("Miller Indices", fontsize=16)
         axes[1, 0].set_ylabel("Surface Energy (J/m²)", fontsize=16)
-        axes[1, 0].set_title("Surface Energy Comparison", fontsize=18, fontweight="bold")
+        axes[1, 0].set_title("Surface Energy Comparison", fontsize=14, fontweight="bold")
         axes[1, 0].set_xticks(x)
         axes[1, 0].set_xticklabels([str(miller) for miller in miller_indices], fontsize=14)
         axes[1, 0].legend(fontsize=14)
@@ -787,7 +794,7 @@ class BasicProperties(WorkingDirectoryMixin):
             )
         axes[1, 1].set_xlabel("Defect Type", fontsize=16)
         axes[1, 1].set_ylabel("Formation Energy (eV)", fontsize=16)
-        axes[1, 1].set_title("Point Defects Formation Energy Comparison", fontsize=18, fontweight="bold")
+        axes[1, 1].set_title("Point Defects Formation Energy Comparison", fontsize=14, fontweight="bold")
         axes[1, 1].set_xticks(x)
         axes[1, 1].set_xticklabels(defect_labels, rotation=45, ha="right", fontsize=14)
         axes[1, 1].legend(fontsize=14)

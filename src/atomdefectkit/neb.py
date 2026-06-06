@@ -148,7 +148,10 @@ class BCCScrewDislocPeierlsBarrier(WorkingDirectoryMixin):
                 ax.plot(reference_reaction_coords, reference_energies, "-s", label="DFT")
         ax.set_xlabel("Reaction coordinate")
         ax.set_ylabel("Energy (meV)")
-        ax.set_title(f"Peierls Barrier in {element} predicted by {self.model_name} + {self.optimizer}")
+        ax.set_title(
+            f"Peierls Barrier in {element} predicted by {self.model_name} + {self.optimizer}",
+            fontsize=12,
+        )
         ax.legend()
         ax.grid(True)
         fig.tight_layout()

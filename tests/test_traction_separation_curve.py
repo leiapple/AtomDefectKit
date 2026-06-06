@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from ase.build import bulk
 
-from atomdefectkit.traction_separation import TractionSeparationCurve, TractionSeparationWorkflow
+from atomdefectkit.TractionSeparation import TractionSeparationCurve, TractionSeparationWorkflow
 
 
 def test_traction_separation_curve_reports_peak_and_work_of_separation():
