@@ -85,6 +85,19 @@ Backend-specific notes
 ``pace``
    Uses a local potential file and should currently be kept on Python 3.11.
 
+``ocp``
+   Wraps the ``OCPCalculator`` flow with automatic checkpoint download to a
+   local cache. The ``ocp`` extra is aligned with the upstream Equiformer v3
+   environment, should currently be treated as Python 3.11 only, and includes
+   the newer PyTorch/PyG stack together with pinned upstream scientific
+   packages and the ``fairchem-core`` package from the Atomic Architects
+   ``equiformer_v3`` repository. The repository also ships
+   ``requirements/ocp-eqv3.txt`` as a supplemental pinned environment file for
+   closer reproduction of the upstream EqV3 setup. The backend can load both legacy
+   OC20/OC22/ODAC pretrained checkpoints such as
+   ``EquiformerV2-31M-S2EF-OC20-All+MD`` and the direct EqV3 aliases such as
+   ``eqV3-omat24-gradient``.
+
 ``mace``
    Often benefits from ``default_dtype="float64"`` for geometry optimization
    and elastic-property calculations.

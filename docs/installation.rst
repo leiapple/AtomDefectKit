@@ -28,6 +28,7 @@ The main optional extras are:
 * ``mattersim``
 * ``nequip``
 * ``nequix``
+* ``ocp``
 * ``pace``
 * ``upet``
 
@@ -87,7 +88,42 @@ Swap the extra name to install another backend:
    uv pip install "atomdefectkit[7net] @ git+https://github.com/leiapple/AtomDefectKit.git@main"
    uv pip install "atomdefectkit[fairchem] @ git+https://github.com/leiapple/AtomDefectKit.git@main"
    uv pip install "atomdefectkit[grace] @ git+https://github.com/leiapple/AtomDefectKit.git@main"
+   uv pip install "atomdefectkit[ocp] @ git+https://github.com/leiapple/AtomDefectKit.git@main"
    uv pip install "atomdefectkit[upet] @ git+https://github.com/leiapple/AtomDefectKit.git@main"
+
+The ``ocp`` extra is aligned with the upstream Equiformer v3 environment
+described by Atomic Architects and should currently be treated as Python 3.11
+only, with
+``torch==2.7.1``, ``torchvision==0.22.1``, ``torchaudio==2.7.1``,
+``ase==3.25.0``, ``e3nn==0.5.6``, ``lmdb==1.7.3``, ``numba==0.61.2``,
+``numpy==2.2.6``, ``orjson==3.11.1``, ``pandas==2.3.1``,
+``pymatgen==2025.6.14``, ``pyyaml==6.0.2``, ``scipy==1.16.1``,
+``submitit==1.5.3``, ``tensorboard==2.20.0``, ``timm==0.4.12``,
+``torch-geometric``, ``tqdm==4.67.1``, ``wandb==0.21.0``, and the
+``fairchem-core`` package from the Atomic Architects ``equiformer_v3``
+repository. This extra is not packaged for Windows in this project.
+
+For the closest match to the upstream EqV3 environment, install the
+supplemental pinned requirements after syncing the extra:
+
+.. code-block:: bash
+
+   uv sync --extra ocp
+   uv pip install -r requirements/ocp-eqv3.txt
+
+The lower-level PyG companion wheels such as ``pyg_lib``,
+``torch-scatter``, ``torch-sparse``, ``torch-cluster``, and
+``torch-spline-conv`` should still be installed with the upstream wheel-index
+commands when required by your platform. If you are installing on a CUDA
+system, prefer the exact PyTorch and PyG wheel commands recommended by the
+upstream EqV3 environment guide so the binaries match your CUDA runtime:
+
+.. code-block:: bash
+
+   uv pip install torch==2.7.1 torchvision==0.22.1 torchaudio==2.7.1 --index-url https://download.pytorch.org/whl/cu128
+   uv pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.7.0+cu128.html
+   uv pip install torch_geometric
+   uv pip install -r requirements/ocp-eqv3.txt
 
 For ``pace``:
 
