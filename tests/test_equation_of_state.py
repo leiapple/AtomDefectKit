@@ -2,7 +2,7 @@ import numpy as np
 from ase import Atoms
 from ase.calculators.calculator import Calculator, all_changes
 
-from atomdefectkit.BasicProperties import BasicProperties
+from atomdefectkit import BasicProperties
 
 
 class VolumeWellCalculator(Calculator):

@@ -27,7 +27,7 @@ Example
 
    import numpy as np
    from ase.build import bulk
-   from atomdefectkit.BasicProperties import BasicProperties
+   from atomdefectkit import BasicProperties
 
    workflow = BasicProperties(
        model_name="mace",

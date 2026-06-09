@@ -1,6 +1,6 @@
 import numpy as np
 
-from atomdefectkit.TractionSeparation import _integrate_trapezoid
+from atomdefectkit.traction_separation import _integrate_trapezoid
 
 
 def test_integrate_trapezoid_matches_numpy_trapezoid():

@@ -12,29 +12,36 @@ from ase.build import bulk
 from atomdefectkit.utils.progress import progress
 
 
-parser = argparse.ArgumentParser(description="Run the GRACE BCC defect workflow for one element.")
+parser = argparse.ArgumentParser(description="Run the EqV3 BCC defect workflow for one element.")
 parser.add_argument("--element", default="Nb", help="Chemical element symbol.")
 parser.add_argument("--initial-a0", type=float, default=3.3, help="Initial BCC lattice-parameter guess in Angstrom.")
-parser.add_argument("--working-dir", default=None, help="Output directory. Defaults to Test_<element>_grace.")
+parser.add_argument("--working-dir", default=None, help="Output directory. Defaults to Test_<element>_eqv3.")
+parser.add_argument("--checkpoint", default="eqV3-omat24-gradient", help="EqV3 checkpoint alias or legacy OCP model name.")
+parser.add_argument("--local-cache", default="pretrained_models", help="Directory used to cache downloaded checkpoints.")
+parser.add_argument("--seed", type=int, default=42, help="Random seed passed to OCPCalculator.")
 args = parser.parse_args()
 
 # Define the benchmark material and output location.
 elem = args.element
 crystal_structure = 'bcc'
 initial_a0 = args.initial_a0
-working_dir = args.working_dir or f'Test_{elem}_grace'
+working_dir = args.working_dir or f'Test_{elem}_eqv3'
 
-# Initialize the workflow with the GRACE calculator backend.
-progress(f"Starting GRACE workflow for {elem} with initial a0={initial_a0} A")
-progress("Loading GRACE calculator")
+# Initialize the workflow with the EqV3 calculator backend.
+progress(f"Starting EqV3 workflow for {elem} with initial a0={initial_a0} A")
+progress("Loading EqV3 calculator")
 workflow = BasicProperties(
-    model_name="GRACE",
-    model_parameters={"model_size": "small", "num_layers": 1, "model_task": "OMAT"},
-    device="cpu",
+    model_name="eqV3",
+    model_parameters={
+        "model_name": args.checkpoint,
+        "local_cache": args.local_cache,
+        "seed": args.seed,
+    },
+    device="cuda",
     working_dir=working_dir,
 )
 calc = workflow.get_calculator()
-progress("GRACE calculator loaded")
+progress("EqV3 calculator loaded")
 
 # Build the conventional cubic BCC unit cell.
 progress("Building BCC unit cell")
@@ -45,7 +52,10 @@ progress("Relaxing lattice constant")
 a0_relax = workflow.calculate_equilibrium_a0_relax(atoms.copy(), fmax=0.001)
 progress(f"Relaxed lattice constant: {a0_relax:.6f} A")
 progress("Fitting Birch-Murnaghan EOS")
-volumes, energies, a0_fit = workflow.calculate_equilibrium_a0_birch_murnaghan(atoms.copy(), vol_range=np.linspace(0.95, 1.05, 40))
+volumes, energies, a0_fit = workflow.calculate_equilibrium_a0_birch_murnaghan(
+    atoms.copy(),
+    vol_range=np.linspace(0.95, 1.05, 40),
+)
 progress(f"EOS lattice constant: {a0_fit:.6f} A")
 
 # Sanity-check that the two lattice-parameter estimates agree.
@@ -62,22 +72,32 @@ vacancy_formation_energy = workflow.calculate_vacancy_formation_energy(atoms)
 
 # Evaluate representative interstitial and vacancy formation energies.
 progress("Calculating interstitial formation energies")
-octahedral_formation_energy = workflow.calculate_interstitial_formation_energy(atoms.copy(), 
-                                                                               elem, 
-                                                                               a0_fit * np.array([0.5, 0.5, 0]))
-tetrahedral_formation_energy = workflow.calculate_interstitial_formation_energy(atoms.copy(), 
-                                                                                elem, 
-                                                                                a0_fit * np.array([0.25, 0.5, 0]))
-inter_100_formation_energy = workflow.calculate_interstitial_formation_energy(atoms.copy(), 
-                                                                              elem, 
-                                                                              a0_fit * np.array([0.5, 0.5, 0]))
-inter_110_formation_energy = workflow.calculate_interstitial_formation_energy(atoms.copy(), 
-                                                                              elem, 
-                                                                              a0_fit * np.array([0.1, 0.1, 0.5]))
-inter_111_formation_energy = workflow.calculate_interstitial_formation_energy(atoms.copy(), 
-                                                                              elem, 
-                                                                              a0_fit * np.array([[0.33, 0.33, 0.33],[0.7, 0.7, 0.7]]), 
-                                                                              dumbbell=True)
+octahedral_formation_energy = workflow.calculate_interstitial_formation_energy(
+    atoms.copy(),
+    elem,
+    a0_fit * np.array([0.5, 0.5, 0]),
+)
+tetrahedral_formation_energy = workflow.calculate_interstitial_formation_energy(
+    atoms.copy(),
+    elem,
+    a0_fit * np.array([0.25, 0.5, 0]),
+)
+inter_100_formation_energy = workflow.calculate_interstitial_formation_energy(
+    atoms.copy(),
+    elem,
+    a0_fit * np.array([0.5, 0.5, 0]),
+)
+inter_110_formation_energy = workflow.calculate_interstitial_formation_energy(
+    atoms.copy(),
+    elem,
+    a0_fit * np.array([0.1, 0.1, 0.5]),
+)
+inter_111_formation_energy = workflow.calculate_interstitial_formation_energy(
+    atoms.copy(),
+    elem,
+    a0_fit * np.array([[0.33, 0.33, 0.33], [0.7, 0.7, 0.7]]),
+    dumbbell=True,
+)
 
 # Calculate surface energies for a small benchmark set of facets.
 progress("Calculating surface energies")
@@ -99,7 +119,7 @@ workflow.save_properties(
     inter_100_formation_energy=inter_100_formation_energy,
     inter_110_formation_energy=inter_110_formation_energy,
     inter_111_formation_energy=inter_111_formation_energy,
-    save_name=f'{elem}_basicProp.json'
+    save_name=f'{elem}_basicProp.json',
 )
 
 # Plot the calculated properties against the stored DFT reference data.
@@ -117,7 +137,7 @@ special_points = {
 
 labels_path = [["N", "G", "H", "P", "G"]]
 
-fig_path = workflow.calculate_phonon_dispersion(
+workflow.calculate_phonon_dispersion(
     structure=atoms,
     special_points=special_points,
     labels_path=labels_path,
@@ -129,7 +149,7 @@ progress("Creating stacking-fault workflow")
 SF = workflow.create_stacking_fault_workflow(
     atoms=atoms.copy(),
     formula=elem,
-    info="GRACE",
+    info="EqV3",
     optimizer="FIRE",
     working_dir=f'{working_dir}/stacking_fault',
 )
@@ -140,7 +160,7 @@ SF.stacking_fault(
     a=(1, 1, -1),
     b=(1, 1, 2),
     miller=(1, -1, 0),
-    distance=a0_fit/2,
+    distance=a0_fit / 2,
     layers=30,
     num_steps=20,
     fmax=0.005,
@@ -154,7 +174,7 @@ SF.stacking_fault(
     a=(1, 1, -1),
     b=(-1, 1, 0),
     miller=(1, 1, 2),
-    distance=a0_fit/2,
+    distance=a0_fit / 2,
     layers=40,
     num_steps=40,
     fmax=0.005,
@@ -203,57 +223,56 @@ dislocation_system = workflow.create_screw_dislocation_workflow(
 
 try:
     bcc_disl_init = dislocation_system.create_dislocation_object()
-    # Relax the initial dislocation dipole configuration.
     progress("Relaxing initial screw-dislocation dipole")
     base_system_init, disl_system_init = dislocation_system.relax_dislocation_dipole(
-                                                bcc_disl_init,
-                                                disloc_center=[0, 0, 0],
-                                                fmax=0.005,
-                                                optimizer='FIRE',
-                                                logfile="initial_fire_dislocation_relax.log",
-                                                )
-
-    # Convert the relaxed atomman system to ASE for downstream workflows.
+        bcc_disl_init,
+        disloc_center=[0, 0, 0],
+        fmax=0.005,
+        optimizer='FIRE',
+        logfile="initial_fire_dislocation_relax.log",
+    )
 
     dislocation_dipole_ase_initial, properties = disl_system_init.dump('ase_Atoms', return_prop=True)
-    # Save the differential-displacement map for the initial core location.
     progress("Plotting initial differential-displacement map")
-    dislocation_system.plot_differential_displacement_map(bcc_disl_init,
-                                                          base_system_init,
-                                                          disl_system_init
-                                                          )
+    dislocation_system.plot_differential_displacement_map(
+        bcc_disl_init,
+        base_system_init,
+        disl_system_init,
+    )
 
-    # Repeat for the displaced final-state core configuration.
     bcc_disl_final = dislocation_system.create_dislocation_object()
 
     progress("Relaxing final screw-dislocation dipole")
     base_system_final, disl_system_final = dislocation_system.relax_dislocation_dipole(
-                                                bcc_disl_final,
-                                                disloc_center=[a0_fit*np.sqrt(6)/3, 0, 0],
-                                                fmax=0.005,
-                                                optimizer='FIRE',
-                                                logfile="final_fire_dislocation_relax.log",
-                                                )
+        bcc_disl_final,
+        disloc_center=[a0_fit * np.sqrt(6) / 3, 0, 0],
+        fmax=0.005,
+        optimizer='FIRE',
+        logfile="final_fire_dislocation_relax.log",
+    )
     dislocation_dipole_ase_final, properties = disl_system_final.dump('ase_Atoms', return_prop=True)
 
-    # Save the differential-displacement map for the final core location.
     progress("Plotting final differential-displacement map")
-    dislocation_system.plot_differential_displacement_map(bcc_disl_final,
-                                                          base_system_final,
-                                                          disl_system_final,
-                                                          )
+    dislocation_system.plot_differential_displacement_map(
+        bcc_disl_final,
+        base_system_final,
+        disl_system_final,
+    )
 
     progress("Running screw-dislocation NEB")
-    bcc_screw_neb = BCCScrewDislocPeierlsBarrier(dislocation_dipole_ase_initial,
-                                                 dislocation_dipole_ase_final,
-                                                 calc, model_name='GRACE-OAM',
-                                                 Nreplica=11,
-                                                 optimizer='FIRE',
-                                                 working_dir=f'{working_dir}/')
+    bcc_screw_neb = BCCScrewDislocPeierlsBarrier(
+        dislocation_dipole_ase_initial,
+        dislocation_dipole_ase_final,
+        calc,
+        model_name='EqV3-OMAT',
+        Nreplica=11,
+        optimizer='FIRE',
+        working_dir=f'{working_dir}/',
+    )
     bcc_screw_neb.relax_initial_final()
     bcc_screw_neb.run_neb(fmax=0.005, spring_constant=0.1)
     bcc_screw_neb.plot_barrier(element=f'{elem}')
     bcc_screw_neb.plot_core_trajectory(Cij=Cij, a0_eq=a0_fit)
 except ValueError as exc:
     progress(f"Skipping screw-dislocation workflow: {exc}")
-progress("GRACE workflow complete")
+progress("EqV3 workflow complete")

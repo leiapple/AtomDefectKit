@@ -46,6 +46,28 @@ pace = [
 ]
 grace = ["tensorpotential>=0.5.9", "pandas>=2.2.3"]
 fairchem = ["fairchem-core>=2.3,<3.0", "pandas>=2.2.3"]
+eqv3 = [
+    "fairchem-core @ git+https://github.com/atomicarchitects/equiformer_v3.git@main#subdirectory=packages/fairchem-core ; python_version == '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin')",
+    "torch==2.7.1; python_version == '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin')",
+    "torchvision==0.22.1; python_version == '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin')",
+    "torchaudio==2.7.1; python_version == '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin')",
+    "ase==3.25.0; python_version == '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin')",
+    "e3nn==0.5.6; python_version == '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin')",
+    "lmdb==1.7.3; python_version == '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin')",
+    "numba==0.61.2; python_version == '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin')",
+    "numpy==2.2.6; python_version == '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin')",
+    "orjson==3.11.1; python_version == '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin')",
+    "pymatgen==2025.6.14; python_version == '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin')",
+    "pyyaml==6.0.2; python_version == '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin')",
+    "scipy==1.16.1; python_version == '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin')",
+    "submitit==1.5.3; python_version == '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin')",
+    "tensorboard==2.20.0; python_version == '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin')",
+    "timm==0.4.12; python_version == '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin')",
+    "torch-geometric; python_version == '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin')",
+    "tqdm==4.67.1; python_version == '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin')",
+    "wandb==0.21.0; python_version == '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin')",
+    "pandas==2.3.1; python_version == '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin')",
+]
 ocp = [
     "fairchem-core @ git+https://github.com/atomicarchitects/equiformer_v3.git@main#subdirectory=packages/fairchem-core ; python_version == '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin')",
     "torch==2.7.1; python_version == '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin')",
@@ -101,6 +123,7 @@ conflicts = [
     [
         { extra = "7net" },
         { extra = "chgnet" },
+        { extra = "eqv3" },
         { extra = "ocp" },
         { extra = "fairchem" },
         { extra = "grace" },

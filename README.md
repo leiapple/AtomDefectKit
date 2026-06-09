@@ -75,8 +75,8 @@ uv run --extra upet python scripts/run_tests_upet.py
 uv sync --extra grace
 uv run --extra grace python scripts/run_tests_grace.py
 
-uv sync --extra ocp
-uv run --extra ocp python scripts/run_test_ocp_adsorption.py --model-name eqV3-omat24-gradient
+uv sync --extra eqv3
+uv run --extra eqv3 python scripts/run_test_eqv3_adsorption.py --model-name eqV3-omat24-gradient
 ```
 
 Once published to PyPI, install one backend extra in a fresh environment:
@@ -130,7 +130,7 @@ uv pip install "atomdefectkit[mace] @ git+https://github.com/leiapple/AtomDefect
 uv pip install "atomdefectkit[7net] @ git+https://github.com/leiapple/AtomDefectKit.git@main"
 uv pip install "atomdefectkit[fairchem] @ git+https://github.com/leiapple/AtomDefectKit.git@main"
 uv pip install "atomdefectkit[grace] @ git+https://github.com/leiapple/AtomDefectKit.git@main"
-uv pip install "atomdefectkit[ocp] @ git+https://github.com/leiapple/AtomDefectKit.git@main"
+uv pip install "atomdefectkit[eqv3] @ git+https://github.com/leiapple/AtomDefectKit.git@main"
 ```
 
 The `pace` backend should stay on Python 3.11:
@@ -139,7 +139,7 @@ The `pace` backend should stay on Python 3.11:
 uv pip install "atomdefectkit[pace] @ git+https://github.com/leiapple/AtomDefectKit.git@main"
 ```
 
-The `ocp` extra is aligned with the upstream Equiformer v3 environment guide
+The `eqv3` extra is aligned with the upstream Equiformer v3 environment guide
 from Atomic Architects and should currently be treated as Python 3.11 only,
 with
 `torch==2.7.1`, `torchvision==0.22.1`, `torchaudio==2.7.1`,
@@ -155,8 +155,8 @@ For the closest match to the upstream EqV3 evaluation environment, install the
 supplemental pinned requirements in this repository after syncing the extra:
 
 ```bash
-uv sync --extra ocp
-uv pip install -r requirements/ocp-eqv3.txt
+uv sync --extra eqv3
+uv pip install -r requirements/eqv3.txt
 ```
 
 The lower-level PyG companion wheels such as `pyg_lib`, `torch-scatter`,
@@ -169,7 +169,18 @@ the upstream EqV3 project when your cluster requires a specific CUDA build:
 uv pip install torch==2.7.1 torchvision==0.22.1 torchaudio==2.7.1 --index-url https://download.pytorch.org/whl/cu128
 uv pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.7.0+cu128.html
 uv pip install torch_geometric
-uv pip install -r requirements/ocp-eqv3.txt
+uv pip install "atomdefectkit[eqv3] @ git+https://github.com/leiapple/AtomDefectKit.git@main"
+uv pip install -r requirements/eqv3.txt
+```
+
+If you want to install EqV3 directly from GitHub on HPC, this is the intended order:
+
+```bash
+uv pip install torch==2.7.1 torchvision==0.22.1 torchaudio==2.7.1 --index-url https://download.pytorch.org/whl/cu128
+uv pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.7.0+cu128.html
+uv pip install torch_geometric
+uv pip install "atomdefectkit[eqv3] @ git+https://github.com/leiapple/AtomDefectKit.git@main"
+uv pip install -r requirements/eqv3.txt
 ```
 
 If you want to keep separate persistent virtual environments for different models, set `UV_PROJECT_ENVIRONMENT` per backend:
@@ -218,7 +229,7 @@ Load a model calculator:
 
 ```python
 import atomdefectkit
-from atomdefectkit.BasicProperties import BasicProperties
+from atomdefectkit import BasicProperties
 
 calc = atomdefectkit.load_model(
     "pace",
@@ -237,7 +248,7 @@ Available bundled model loaders currently include:
 - `mattersim`
 - `nequip`
 - `nequix`
-- `ocp`
+- `eqv3`
 - `pace`
 - `upet`
 

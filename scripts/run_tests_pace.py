@@ -1,6 +1,6 @@
 # 
 
-from atomdefectkit.BasicProperties import BasicProperties
+from atomdefectkit import BasicProperties
 from atomdefectkit.neb import BCCScrewDislocPeierlsBarrier
 
 import numpy as np

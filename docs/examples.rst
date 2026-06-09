@@ -78,7 +78,7 @@ A minimal programmatic usage pattern is:
 .. code-block:: python
 
    import atomdefectkit
-   from atomdefectkit.BasicProperties import BasicProperties
+   from atomdefectkit import BasicProperties
 
    calc = atomdefectkit.load_model(
        "pace",

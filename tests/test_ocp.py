@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from atomdefectkit.models.ocp import EQV3_MODEL_URLS, _download_direct_checkpoint
+from atomdefectkit.models.eqv3 import EQV3_MODEL_URLS, _download_direct_checkpoint
 
 
 def test_download_direct_checkpoint_uses_expected_url(monkeypatch, tmp_path):
@@ -13,7 +13,7 @@ def test_download_direct_checkpoint_uses_expected_url(monkeypatch, tmp_path):
         recorded["destination"] = str(destination)
         Path(destination).write_text("checkpoint")
 
-    monkeypatch.setattr("atomdefectkit.models.ocp.urlretrieve", fake_urlretrieve)
+    monkeypatch.setattr("atomdefectkit.models.eqv3.urlretrieve", fake_urlretrieve)
 
     checkpoint = _download_direct_checkpoint("eqV3-omat24-gradient", str(tmp_path))
 

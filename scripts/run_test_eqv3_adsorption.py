@@ -7,11 +7,11 @@ from atomdefectkit import load_model
 from atomdefectkit.utils.progress import progress
 
 
-parser = argparse.ArgumentParser(description="Run a simple compatibility wrapper for the EqV3 adsorption example.")
+parser = argparse.ArgumentParser(description="Run a simple EqV3/OCPCalculator adsorption example.")
 parser.add_argument(
     "--model-name",
-    default="EquiformerV2-31M-S2EF-OC20-All+MD",
-    help="Legacy compatibility alias. Prefer the EqV3 direct-checkpoint aliases.",
+    default="eqV3-omat24-gradient",
+    help="EqV3 pretrained model name, or one of the EqV3 direct-checkpoint aliases.",
 )
 parser.add_argument(
     "--local-cache",
@@ -23,16 +23,22 @@ parser.add_argument(
     action="store_true",
     help="Force CPU execution.",
 )
+parser.add_argument(
+    "--seed",
+    type=int,
+    default=42,
+    help="Random seed passed through to OCPCalculator.",
+)
 args = parser.parse_args()
 
-progress(f"Loading EqV3 model through the legacy OCP alias: {args.model_name}")
+progress(f"Loading EqV3 model {args.model_name}")
 calc = load_model(
-    "ocp",
+    "eqV3",
     {
         "model_name": args.model_name,
         "local_cache": args.local_cache,
         "cpu": args.cpu,
-        "seed": 42,
+        "seed": args.seed,
     },
     device="cpu" if args.cpu else "cuda",
 )

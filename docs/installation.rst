@@ -28,7 +28,7 @@ The main optional extras are:
 * ``mattersim``
 * ``nequip``
 * ``nequix``
-* ``ocp``
+* ``eqv3``
 * ``pace``
 * ``upet``
 
@@ -88,10 +88,10 @@ Swap the extra name to install another backend:
    uv pip install "atomdefectkit[7net] @ git+https://github.com/leiapple/AtomDefectKit.git@main"
    uv pip install "atomdefectkit[fairchem] @ git+https://github.com/leiapple/AtomDefectKit.git@main"
    uv pip install "atomdefectkit[grace] @ git+https://github.com/leiapple/AtomDefectKit.git@main"
-   uv pip install "atomdefectkit[ocp] @ git+https://github.com/leiapple/AtomDefectKit.git@main"
+   uv pip install "atomdefectkit[eqv3] @ git+https://github.com/leiapple/AtomDefectKit.git@main"
    uv pip install "atomdefectkit[upet] @ git+https://github.com/leiapple/AtomDefectKit.git@main"
 
-The ``ocp`` extra is aligned with the upstream Equiformer v3 environment
+The ``eqv3`` extra is aligned with the upstream Equiformer v3 environment
 described by Atomic Architects and should currently be treated as Python 3.11
 only, with
 ``torch==2.7.1``, ``torchvision==0.22.1``, ``torchaudio==2.7.1``,
@@ -108,8 +108,8 @@ supplemental pinned requirements after syncing the extra:
 
 .. code-block:: bash
 
-   uv sync --extra ocp
-   uv pip install -r requirements/ocp-eqv3.txt
+   uv sync --extra eqv3
+   uv pip install -r requirements/eqv3.txt
 
 The lower-level PyG companion wheels such as ``pyg_lib``,
 ``torch-scatter``, ``torch-sparse``, ``torch-cluster``, and
@@ -123,7 +123,19 @@ upstream EqV3 environment guide so the binaries match your CUDA runtime:
    uv pip install torch==2.7.1 torchvision==0.22.1 torchaudio==2.7.1 --index-url https://download.pytorch.org/whl/cu128
    uv pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.7.0+cu128.html
    uv pip install torch_geometric
-   uv pip install -r requirements/ocp-eqv3.txt
+   uv pip install "atomdefectkit[eqv3] @ git+https://github.com/leiapple/AtomDefectKit.git@main"
+   uv pip install -r requirements/eqv3.txt
+
+If you want to install EqV3 directly from GitHub on HPC, use the following
+order:
+
+.. code-block:: bash
+
+   uv pip install torch==2.7.1 torchvision==0.22.1 torchaudio==2.7.1 --index-url https://download.pytorch.org/whl/cu128
+   uv pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.7.0+cu128.html
+   uv pip install torch_geometric
+   uv pip install "atomdefectkit[eqv3] @ git+https://github.com/leiapple/AtomDefectKit.git@main"
+   uv pip install -r requirements/eqv3.txt
 
 For ``pace``:
 

@@ -45,7 +45,7 @@ Creating a workflow from a model name
 
 .. code-block:: python
 
-   from atomdefectkit.BasicProperties import BasicProperties
+   from atomdefectkit import BasicProperties
 
    workflow = BasicProperties(
        model_name="upet",
@@ -64,7 +64,7 @@ model registry:
 
 .. code-block:: python
 
-   from atomdefectkit.BasicProperties import BasicProperties
+   from atomdefectkit import BasicProperties
 
    workflow = BasicProperties(
        calculator=existing_calc,
@@ -85,14 +85,14 @@ Backend-specific notes
 ``pace``
    Uses a local potential file and should currently be kept on Python 3.11.
 
-``ocp``
+``eqv3``
    Wraps the ``OCPCalculator`` flow with automatic checkpoint download to a
-   local cache. The ``ocp`` extra is aligned with the upstream Equiformer v3
+   local cache. The ``eqv3`` extra is aligned with the upstream Equiformer v3
    environment, should currently be treated as Python 3.11 only, and includes
    the newer PyTorch/PyG stack together with pinned upstream scientific
    packages and the ``fairchem-core`` package from the Atomic Architects
    ``equiformer_v3`` repository. The repository also ships
-   ``requirements/ocp-eqv3.txt`` as a supplemental pinned environment file for
+   ``requirements/eqv3.txt`` as a supplemental pinned environment file for
    closer reproduction of the upstream EqV3 setup. The backend can load both legacy
    OC20/OC22/ODAC pretrained checkpoints such as
    ``EquiformerV2-31M-S2EF-OC20-All+MD`` and the direct EqV3 aliases such as

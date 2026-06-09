@@ -171,7 +171,7 @@ class BasicProperties(WorkingDirectoryMixin):
         Returns:
             StackingFaultWorkflow: Workflow instance sharing this calculator.
         """
-        from atomdefectkit.StackingFaults import StackingFaultWorkflow
+        from atomdefectkit.stacking_fault import StackingFaultWorkflow
 
         return StackingFaultWorkflow(
             atoms=atoms,
@@ -203,7 +203,7 @@ class BasicProperties(WorkingDirectoryMixin):
         Returns:
             TractionSeparationWorkflow: Workflow instance sharing this calculator.
         """
-        from atomdefectkit.TractionSeparation import TractionSeparationWorkflow
+        from atomdefectkit.traction_separation import TractionSeparationWorkflow
 
         return TractionSeparationWorkflow(
             atoms=atoms,

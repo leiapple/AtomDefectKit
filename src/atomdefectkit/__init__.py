@@ -1,10 +1,10 @@
 import importlib
 
-from atomdefectkit.BasicProperties import BasicProperties
+from atomdefectkit.basic_properties import BasicProperties
 from atomdefectkit.model_discovery import discover_models
 from atomdefectkit.registry import MODEL_METADATA, MODEL_REGISTRY
-from atomdefectkit.StackingFaults import StackingFaultCurve, StackingFaultWorkflow
-from atomdefectkit.TractionSeparation import (
+from atomdefectkit.stacking_fault import StackingFaultCurve, StackingFaultWorkflow
+from atomdefectkit.traction_separation import (
     TractionSeparationCurve,
     TractionSeparationWorkflow,
 )

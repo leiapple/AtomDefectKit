@@ -2,8 +2,7 @@ from ase import Atoms
 import numpy as np
 
 from atomdefectkit.neb import BCCScrewDislocPeierlsBarrier
-from atomdefectkit.StackingFaults import StackingFaultWorkflow
-from atomdefectkit.TractionSeparation import TractionSeparationWorkflow
+from atomdefectkit import StackingFaultWorkflow, TractionSeparationWorkflow
 
 
 def test_stacking_fault_reference_curve_lookup_finds_repo_data(tmp_path):
