@@ -1,0 +1,166 @@
+# 
+
+from atomdefectkit import BasicProperties
+from atomdefectkit.neb import BCCScrewDislocPeierlsBarrier
+
+import numpy as np
+
+from ase.build import bulk
+from pyace import PyACECalculator
+
+from atomdefectkit.utils.progress import progress
+
+# Define the benchmark material and output location.
+elem = 'Nb'
+crystal_structure = 'bcc'
+initial_a0 = 3.3  # Initial lattice-parameter guess in Angstrom.
+working_dir = 'pace_disloc_Nb'
+
+progress(f"Starting PACE workflow for {elem} with initial a0={initial_a0} A")
+progress("Loading PACE calculator")
+calc = PyACECalculator('/Users/leizhang/Nextcloud/1_Science_Postdoc_Projects/0_0_RUG_Screw_BCC/9_1_data_git/ACE2025_potential/Nb/output_potential.yaml')
+progress("PACE calculator loaded")
+
+# Initialize the basic-property workflow with a direct ACE calculator.
+workflow = BasicProperties(calculator=calc, working_dir=working_dir)
+calc = workflow.get_calculator()
+
+# Build the conventional cubic BCC unit cell.
+progress("Building BCC unit cell")
+atoms = bulk(elem, crystal_structure, a=initial_a0, cubic=True)
+
+# Estimate the equilibrium lattice parameter from both relaxation and EOS fitting.
+progress("Relaxing lattice constant")
+a0_relax = workflow.calculate_equilibrium_a0_relax(atoms.copy(), fmax=0.001)
+progress(f"Relaxed lattice constant: {a0_relax:.6f} A")
+progress("Fitting Birch-Murnaghan EOS")
+volumes, energies, a0_fit = workflow.calculate_equilibrium_a0_birch_murnaghan(atoms.copy(), vol_range=np.linspace(0.95, 1.05, 40))
+progress(f"EOS lattice constant: {a0_fit:.6f} A")
+
+# Sanity-check that the two lattice-parameter estimates agree.
+if abs(a0_relax - a0_fit) > 1e-4:
+    print('Lattice constant difference is', abs(a0_relax - a0_fit))
+    print('Check the approach for getting lattice constant!')
+
+# Update the bulk cell before computing defect and surface properties.
+atoms.set_cell([a0_fit] * 3, scale_atoms=True)
+progress("Calculating elastic constants")
+Cij = workflow.calculate_elastic_constants(atoms.copy(), verbose=False)
+progress("Calculating vacancy formation energy")
+vacancy_formation_energy = workflow.calculate_vacancy_formation_energy(atoms)
+
+# Evaluate representative interstitial and vacancy formation energies.
+progress("Calculating interstitial formation energies")
+octahedral_formation_energy = workflow.calculate_interstitial_formation_energy(atoms.copy(), 
+                                                                               elem, 
+                                                                               a0_fit * np.array([0.5, 0.5, 0]))
+tetrahedral_formation_energy = workflow.calculate_interstitial_formation_energy(atoms.copy(), 
+                                                                                elem, 
+                                                                                a0_fit * np.array([0.25, 0.5, 0]))
+inter_100_formation_energy = workflow.calculate_interstitial_formation_energy(atoms.copy(), 
+                                                                              elem, 
+                                                                              a0_fit * np.array([0.5, 0.5, 0]))
+inter_110_formation_energy = workflow.calculate_interstitial_formation_energy(atoms.copy(), 
+                                                                              elem, 
+                                                                              a0_fit * np.array([0.1, 0.1, 0.5]))
+inter_111_formation_energy = workflow.calculate_interstitial_formation_energy(atoms.copy(), 
+                                                                              elem, 
+                                                                              a0_fit * np.array([[0.33, 0.33, 0.33],[0.7, 0.7, 0.7]]), 
+                                                                              dumbbell=True)
+
+# Calculate surface energies for a small benchmark set of facets.
+progress("Calculating surface energies")
+surface_energy = np.zeros(4)
+miller_indices_list = [(1, 0, 0), (1, 1, 0), (1, 1, 1), (1, 1, 2)]
+for i, miller_indices in enumerate(miller_indices_list):
+    progress(f"Calculating surface energy for {miller_indices}")
+    surface_energy[i] = workflow.calculate_surface_energy(atoms, miller_indices, vacuum=20, n_layers=8)
+
+progress("Saving basic properties")
+workflow.save_properties(
+    volumes=volumes,
+    energies=energies,
+    Cij=Cij,
+    surface_energy=surface_energy,
+    vacancy_formation_energy=vacancy_formation_energy,
+    octahedral_formation_energy=octahedral_formation_energy,
+    tetrahedral_formation_energy=tetrahedral_formation_energy,
+    inter_100_formation_energy=inter_100_formation_energy,
+    inter_110_formation_energy=inter_110_formation_energy,
+    inter_111_formation_energy=inter_111_formation_energy,
+    save_name=f'{elem}_basicProp.json'
+)
+
+# Plot the calculated properties against the stored DFT reference data.
+progress("Plotting basic-property comparison")
+workflow.plot_comparison(
+    workflow.path(f"{elem}_basicProp.json"),
+    f"../data/BasicProperties/dft_{elem}.json",
+)
+
+# screw dislocation
+progress("Creating screw-dislocation workflow")
+dislocation_system = workflow.create_screw_dislocation_workflow(
+    element=elem,
+    lattice_constant=a0_fit,
+    elastic_constant=Cij,
+    working_dir=working_dir,
+)
+
+try:
+    bcc_disl_init = dislocation_system.create_dislocation_object()
+    # Relax the initial dislocation dipole configuration.
+    progress("Relaxing initial screw-dislocation dipole")
+    base_system_init, disl_system_init = dislocation_system.relax_dislocation_dipole(
+                                                bcc_disl_init,
+                                                disloc_center=[0, 0, 0],
+                                                fmax=0.005,
+                                                optimizer='FIRE',
+                                                logfile="initial_fire_dislocation_relax.log",
+                                                )
+
+    # Convert the relaxed atomman system to ASE for downstream workflows.
+
+    dislocation_dipole_ase_initial, properties = disl_system_init.dump('ase_Atoms', return_prop=True)
+    # Save the differential-displacement map for the initial core location.
+    progress("Plotting initial differential-displacement map")
+    dislocation_system.plot_differential_displacement_map(bcc_disl_init,
+                                                          base_system_init,
+                                                          disl_system_init
+                                                          )
+
+    # Repeat for the displaced final-state core configuration.
+    bcc_disl_final = dislocation_system.create_dislocation_object()
+
+    progress("Relaxing final screw-dislocation dipole")
+    base_system_final, disl_system_final = dislocation_system.relax_dislocation_dipole(
+                                                bcc_disl_final,
+                                                disloc_center=[a0_fit*np.sqrt(6)/3, 0, 0],
+                                                fmax=0.005,
+                                                optimizer='FIRE',
+                                                logfile="final_fire_dislocation_relax.log",
+                                                )
+    dislocation_dipole_ase_final, properties = disl_system_final.dump('ase_Atoms', return_prop=True)
+
+    # Save the differential-displacement map for the final core location.
+    progress("Plotting final differential-displacement map")
+    dislocation_system.plot_differential_displacement_map(bcc_disl_final,
+                                                          base_system_final,
+                                                          disl_system_final,
+                                                          )
+
+    progress("Running screw-dislocation NEB")
+    bcc_screw_neb = BCCScrewDislocPeierlsBarrier(dislocation_dipole_ase_initial,
+                                                 dislocation_dipole_ase_final,
+                                                 calc,
+                                                 model_name='ACE2025',
+                                                 Nreplica=11,
+                                                 optimizer='FIRE',
+                                                 working_dir=working_dir)
+    bcc_screw_neb.relax_initial_final()
+    bcc_screw_neb.run_neb(fmax=0.005, spring_constant=0.1)
+    bcc_screw_neb.plot_barrier(element=f'{elem}')
+    bcc_screw_neb.plot_core_trajectory(Cij=Cij, a0_eq=a0_fit)
+except ValueError as exc:
+    progress(f"Skipping screw-dislocation workflow: {exc}")
+progress("PACE workflow complete")

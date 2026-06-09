@@ -101,7 +101,7 @@ only, with
 ``submitit==1.5.3``, ``tensorboard==2.20.0``, ``timm==0.4.12``,
 ``torch-geometric``, ``tqdm==4.67.1``, ``wandb==0.21.0``, and the
 ``fairchem-core`` package from the Atomic Architects ``equiformer_v3``
-repository. This extra is not packaged for Windows in this project.
+repository. This extra is packaged in this project for Linux only.
 
 For the closest match to the upstream EqV3 environment, install the
 supplemental pinned requirements after syncing the extra:

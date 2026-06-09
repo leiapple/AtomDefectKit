@@ -1,4 +1,4 @@
-"""Implementation of legacy OCP and direct EqV3 checkpoints via OCPCalculator."""
+"""Implementation of EqV3 and compatible pretrained checkpoints via OCPCalculator."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from urllib.request import urlretrieve
 from atomdefectkit.registry import register_model
 
 
-OCP_LEGACY_MODEL_CHOICES = [
+LEGACY_MODEL_CHOICES = [
     "EquiformerV2-83M-S2EF-OC20-2M",
     "EquiformerV2-31M-S2EF-OC20-All+MD",
     "EquiformerV2-153M-S2EF-OC20-All+MD",
@@ -23,7 +23,7 @@ EQV3_MODEL_URLS = {
     "eqV3-omat24-gradient": "https://huggingface.co/mirror-physics/equiformer_v3/resolve/main/checkpoint/omat24_gradient.pt",
     "eqV3-omat24-mptrj-salex_gradient": "https://huggingface.co/mirror-physics/equiformer_v3/resolve/main/checkpoint/omat24-mptrj-salex_gradient.pt",
 }
-EQV3_MODEL_CHOICES = OCP_LEGACY_MODEL_CHOICES + sorted(EQV3_MODEL_URLS)
+EQV3_MODEL_CHOICES = LEGACY_MODEL_CHOICES + sorted(EQV3_MODEL_URLS)
 
 
 def _download_direct_checkpoint(model_name: str, local_cache: str) -> str:
@@ -54,7 +54,7 @@ def _resolve_checkpoint_path(model_name: str, local_cache: str) -> str:
     except ImportError as exc:
         raise ImportError(
             "Could not import model_name_to_local_file from fairchem. "
-            "Install the legacy OCP backend dependencies with the EqV3 extra via `uv sync --extra eqv3`."
+            "Install the EqV3 backend dependencies with the EqV3 extra via `uv sync --extra eqv3`."
         ) from exc
 
     return model_name_to_local_file(model_name, local_cache=local_cache)
@@ -95,7 +95,7 @@ EQV3_METADATA = {
     },
     "local_cache": {
         "type": "str",
-        "description": "Directory used to cache downloaded EqV3/OCP checkpoints.",
+        "description": "Directory used to cache downloaded EqV3 checkpoints.",
         "default": "pretrained_models",
     },
     "cpu": {
@@ -151,7 +151,3 @@ def _build_impl(params, device):
 def _build_eqv3(params, device):
     return _build_impl(params, device)
 
-
-@register_model("ocp", metadata=EQV3_METADATA)
-def _build_ocp_alias(params, device):
-    return _build_impl(params, device)
