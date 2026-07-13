@@ -34,6 +34,7 @@ requires-python = ">=3.11,<3.14"
 dependencies = [
     "atomman>=1.5.2",
     "matscipy>=1.1,<2.0",
+    "matplotlib>=3.7,<3.10",
     "pandas>=2.2.3; extra != 'pace'",
     "phonopy>=4.1.0",
     "spglib>=2.7.0",

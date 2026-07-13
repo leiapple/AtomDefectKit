@@ -26,12 +26,13 @@ def build_surface_slab(
     Returns:
         ase.Atoms: Generated slab.
     """
+    surface_vacuum = None if vacuum <= 0.0 else vacuum
     slab = surface(
         structure,
         miller_indices,
         layers=layers,
         periodic=True,
-        vacuum=vacuum,
+        vacuum=surface_vacuum,
     )
     slab = slab.repeat(tuple(repeat))
     if center_axis is not None:
