@@ -21,3 +21,6 @@ demo/ts_*/
 
 # Documentation build output
 docs/_build/
+
+# local test files
+local_tests
