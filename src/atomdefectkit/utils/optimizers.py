@@ -5,7 +5,6 @@ from __future__ import annotations
 from ase.optimize import BFGS, FIRE, LBFGS
 from ase.optimize.sciopt import SciPyFminCG
 
-
 OPTIMIZER_REGISTRY = {
     "FIRE": FIRE,
     "BFGS": BFGS,
@@ -58,3 +57,59 @@ def build_optimizer(target, optimizer: str, **kwargs):
     """
     name = normalize_optimizer_name(optimizer)
     return OPTIMIZER_REGISTRY[name](target, **kwargs)
+
+
+CELL_FILTERS = {
+    "strain": "StrainFilter",
+    "unitcell": "UnitCellFilter",
+    "frechet": "FrechetCellFilter",
+}
+
+
+def relax(
+    atoms,
+    calculator=None,
+    optimizer: str = "FIRE",
+    fmax: float = 0.01,
+    steps: int | None = None,
+    logfile=None,
+    cell_filter: str | None = None,
+    **filter_kwargs,
+):
+    """Relax a structure in place with one ASE optimizer.
+
+    Args:
+        atoms: Structure to relax. It is modified in place and returned.
+        calculator: Optional calculator attached before relaxing. When omitted,
+            the calculator already attached to ``atoms`` is used.
+        optimizer: Optimizer label accepted by ``build_optimizer``.
+        fmax: Force convergence threshold in eV/Angstrom.
+        steps: Optional maximum number of optimizer steps.
+        logfile: Optional optimizer logfile path.
+        cell_filter: Optional cell filter, one of ``"strain"``, ``"unitcell"`` or
+            ``"frechet"``. When omitted, only atomic positions are relaxed.
+        **filter_kwargs: Extra keyword arguments passed to the cell filter,
+            for example ``mask``.
+
+    Returns:
+        ase.Atoms: The relaxed ``atoms``.
+    """
+    if calculator is not None:
+        atoms.calc = calculator
+
+    target = atoms
+    if cell_filter is not None:
+        import ase.filters
+
+        try:
+            filter_name = CELL_FILTERS[cell_filter.lower()]
+        except KeyError as exc:
+            allowed = "', '".join(CELL_FILTERS)
+            raise ValueError(f"cell_filter must be '{allowed}', not {cell_filter!r}") from exc
+        target = getattr(ase.filters, filter_name)(atoms, **filter_kwargs)
+
+    run_kwargs = {"fmax": fmax}
+    if steps is not None:
+        run_kwargs["steps"] = steps
+    build_optimizer(target, optimizer, logfile=logfile).run(**run_kwargs)
+    return atoms

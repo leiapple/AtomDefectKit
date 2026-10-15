@@ -2,22 +2,31 @@
 
 from __future__ import annotations
 
-from importlib import resources
+import logging
 from pathlib import Path
 
-from ase.filters import FrechetCellFilter
-from ase import units
-from ase.io import read
-from ase.mep import NEB
 import matplotlib.pyplot as plt
-from matscipy.elasticity import rotate_elastic_constants
 import numpy as np
 import pandas as pd
-from atomdefectkit.utils.optimizers import build_optimizer, normalize_optimizer_name
-from atomdefectkit.utils.paths import WorkingDirectoryMixin
+from ase import units
+from ase.geometry import find_mic
+from ase.io import read
+from ase.mep import NEB
+from matscipy.elasticity import rotate_elastic_constants
+
+from atomdefectkit.data import reference_path
+from atomdefectkit.units import EV_TO_MEV
+from atomdefectkit.utils.optimizers import build_optimizer, normalize_optimizer_name, relax
+from atomdefectkit.utils.paths import CalculatorWorkflow
+
+logger = logging.getLogger(__name__)
+
+#: A screw dislocation dipole cell holds two dislocations; barrier energies are
+#: reported per dislocation.
+DISLOCATIONS_PER_DIPOLE = 2
 
 
-class BCCScrewDislocPeierlsBarrier(WorkingDirectoryMixin):
+class BCCScrewDislocPeierlsBarrier(CalculatorWorkflow):
     """Calculate Peierls barriers with a NEB workflow."""
 
     def __init__(
@@ -34,64 +43,36 @@ class BCCScrewDislocPeierlsBarrier(WorkingDirectoryMixin):
         self.final_config = final_config
         self.model_name = model_name
         self.Nreplica = Nreplica
-        self.calc = calc
+        self.calculator = calc
         self.optimizer = normalize_optimizer_name(optimizer)
         self.init_working_dir(working_dir, "screw_disloc")
 
-    @staticmethod
-    def _project_root() -> Path:
-        return Path(__file__).resolve().parents[2]
-
     def _reference_barrier_path(self, element: str) -> Path | None:
-        filename = f"{element}_bcc_VASP.csv"
-
-        for package_name in (
-            "atomdefectkit.data.PeierlsPotential",
-            "atomdefectkit.data.peierls_potential",
-        ):
-            try:
-                packaged = resources.files(package_name).joinpath(filename)
-            except ModuleNotFoundError:
-                continue
-            if packaged.is_file():
-                return Path(packaged)
-
-        candidate = self._project_root() / "data" / "PeierlsPotential" / filename
-        return candidate if candidate.exists() else None
+        """Return the packaged DFT Peierls barrier for ``element``, if any."""
+        return reference_path("peierls_barrier", f"{element}_bcc_VASP.csv")
 
     def relax_initial_final(self, fmax=0.001, steps=10000):
         for label, config in [("initial", self.initial_config), ("final", self.final_config)]:
-            config.calc = self.calc
-            opt = build_optimizer(
-                FrechetCellFilter(config),
-                self.optimizer,
+            relax(
+                config,
+                self.calculator,
+                optimizer=self.optimizer,
+                fmax=fmax,
+                steps=steps,
                 logfile=self.path(f"{label}_{self.optimizer.lower()}_relax.log"),
+                cell_filter="frechet",
             )
-            opt.run(fmax=fmax, steps=steps)
 
         E_diff = self.final_config.get_potential_energy() - self.initial_config.get_potential_energy()
         if abs(E_diff) > 1e-3:
-            print(f"WARNING: Initial and final energies differ by {E_diff * 1000:.2f} meV")
+            logger.warning("Initial and final energies differ by %.2f meV", E_diff * EV_TO_MEV)
         return E_diff
 
     @staticmethod
     def _fix_pbc_issues(initial, final):
-        cell = final.get_cell()
         pos_i = initial.get_positions()
-        pos_f = final.get_positions()
-        delta = pos_f - pos_i
-
-        for i, vec in enumerate(delta):
-            min_dist = float("inf")
-            best_shift = np.zeros(3)
-            for a, b, c in np.ndindex(3, 3, 3):
-                shift = (a - 1) * cell[0] + (b - 1) * cell[1] + (c - 1) * cell[2]
-                dist = np.linalg.norm(vec + shift)
-                if dist < min_dist:
-                    min_dist = dist
-                    best_shift = shift
-            pos_f[i] += best_shift
-        return pos_f
+        delta, _ = find_mic(final.get_positions() - pos_i, final.get_cell(), pbc=True)
+        return pos_i + delta
 
     @staticmethod
     def _interpolate(initial, final, ratio):
@@ -115,7 +96,7 @@ class BCCScrewDislocPeierlsBarrier(WorkingDirectoryMixin):
 
         images = [self._interpolate(initial, final, r) for r in np.linspace(0, 1, self.Nreplica)]
         for image in images:
-            image.calc = self.calc
+            image.calc = self.calculator
 
         neb = NEB(images, k=spring_constant, allow_shared_calculator=True, climb=True)
         optimizer = build_optimizer(
@@ -140,13 +121,13 @@ class BCCScrewDislocPeierlsBarrier(WorkingDirectoryMixin):
         energies = []
 
         for i, image in enumerate(images):
-            image.calc = self.calc
+            image.calc = self.calculator
             energies.append(image.get_potential_energy())
             if write_poscar:
                 image.write(self.path(f"neb_{i}.poscar"))
 
         energies = np.array(energies)
-        energies = 1000 * (energies - min(energies)) / 2
+        energies = EV_TO_MEV * (energies - min(energies)) / DISLOCATIONS_PER_DIPOLE
 
         if save_csv:
             df = pd.DataFrame({"Reaction_Coordinate": reaction_coords, "Energy_meV": energies})
@@ -160,7 +141,7 @@ class BCCScrewDislocPeierlsBarrier(WorkingDirectoryMixin):
             if reference_path is not None and reference_path.exists():
                 reference_data = np.loadtxt(reference_path)
                 reference_reaction_coords = reference_data[:, 1] / max(reference_data[:, 1])
-                reference_energies = reference_data[:, 2] * 1000 / 2
+                reference_energies = reference_data[:, 2] * EV_TO_MEV / DISLOCATIONS_PER_DIPOLE
                 ax.plot(reference_reaction_coords, reference_energies, "-s", label="DFT")
         ax.set_xlabel("Reaction coordinate")
         ax.set_ylabel("Energy (meV)")
@@ -172,6 +153,7 @@ class BCCScrewDislocPeierlsBarrier(WorkingDirectoryMixin):
         ax.grid(True)
         fig.tight_layout()
         fig.savefig(self.path("peierls_barrier.png"), dpi=300)
+        plt.close(fig)
         return fig, ax
 
     def plot_core_trajectory(
@@ -218,7 +200,7 @@ class BCCScrewDislocPeierlsBarrier(WorkingDirectoryMixin):
 
         rotation = np.array([slip_direction, slip_plane, line_direction])
         C6 = rotate_elastic_constants(np.asarray(Cij, dtype=float), rotation) * units.GPa
-        
+
         images = read(f"{self.path(trajectory)}@-{self.Nreplica}:")
         delta_x_list = []
         delta_y_list = []
@@ -230,10 +212,10 @@ class BCCScrewDislocPeierlsBarrier(WorkingDirectoryMixin):
                 try:
                     stress = image.get_stress(voigt=False)
                 except Exception:  # pylint: disable=broad-exception-caught
-                    image.calc = self.calc
+                    image.calc = self.calculator
                     stress = image.get_stress(voigt=False)
             else:
-                image.calc = self.calc
+                image.calc = self.calculator
                 stress = image.get_stress(voigt=False)
 
             area = np.linalg.norm(np.cross(image.get_cell()[0], image.get_cell()[1]))
@@ -305,4 +287,5 @@ class BCCScrewDislocPeierlsBarrier(WorkingDirectoryMixin):
         ax.legend()
         fig.tight_layout()
         fig.savefig(self.path(figure_name), dpi=300)
+        plt.close(fig)
         return fig, ax, profile

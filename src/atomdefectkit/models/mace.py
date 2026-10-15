@@ -23,8 +23,8 @@ from atomdefectkit.registry import register_model
                 "matpes_r2scan",
                 "default",
             ],
-            "description": "Task head used by the model (depend on the provided model file, see https://github.com/acesuit/mace#pretrained-foundation-models).",
-            "default": "omat_pbe",
+            "description": "Task head used by the model (depend on the provided model file, see https://github.com/acesuit/mace#pretrained-foundation-models). Multi-head models such as mace-mh need an explicit head, e.g. 'omat_pbe'.",
+            "default": "default",
         },
         "default_dtype": {
             "type": "str",

@@ -1,19 +1,19 @@
 """BCC screw dislocation setup and analysis tools."""
 
 from __future__ import annotations
-import os
+
 import warnings
 
+import atomman as am
+import atomman.unitconvert as uc
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
-import atomman as am
-import atomman.unitconvert as uc
 from ase.data import atomic_numbers
 from ase.geometry import find_mic, wrap_positions
-from atomdefectkit.utils.optimizers import build_optimizer, normalize_optimizer_name
-from atomdefectkit.utils.paths import WorkingDirectoryMixin
 
+from atomdefectkit.utils.optimizers import normalize_optimizer_name, relax
+from atomdefectkit.utils.paths import CalculatorWorkflow
 
 if not hasattr(matplotlib.cm, "get_cmap"):
     def _get_cmap_compat(name=None, lut=None):
@@ -137,7 +137,7 @@ def insert_light_element_at_dislocation_core(
     return result
 
 
-class BCCScrewDislocation(WorkingDirectoryMixin):
+class BCCScrewDislocation(CalculatorWorkflow):
     """Create, relax, and analyze screw dislocation dipoles in BCC metals."""
 
     def __init__(self, element, lattice_constant, elastic_constant, calculator, working_dir='.'):
@@ -173,6 +173,14 @@ class BCCScrewDislocation(WorkingDirectoryMixin):
             )
 
     def create_dislocation_object(self):
+        """Build the atomman 1/2<111>{110} screw dislocation for this BCC metal.
+
+        Returns:
+            atomman.defect.Dislocation: Dislocation solution and construction helper.
+
+        Raises:
+            ValueError: If the elastic constants are mechanically unstable.
+        """
         self.validate_cubic_elastic_constants()
         alat = uc.set_in_units(self.a0, "angstrom")
         C11 = uc.set_in_units(self.cij[0,0], "GPa")
@@ -238,15 +246,16 @@ class BCCScrewDislocation(WorkingDirectoryMixin):
         base_system, dislocation_dipole_ase, properties = (
             self.build_dislocation_dipole_ase(dislocation, disloc_center)
         )
-        dislocation_dipole_ase.calc = self.calculator
-
         optimizer_name = normalize_optimizer_name(optimizer)
         if logfile is None:
             logfile = f"{optimizer_name.lower()}_dislocation_dipole_relax.log"
-        logfile = self.path(logfile)
-        os.makedirs(os.path.dirname(logfile) or ".", exist_ok=True)
-        opt = build_optimizer(dislocation_dipole_ase, optimizer_name, logfile=logfile)
-        opt.run(fmax=fmax)
+        relax(
+            dislocation_dipole_ase,
+            self.calculator,
+            optimizer=optimizer_name,
+            fmax=fmax,
+            logfile=self.path(logfile),
+        )
         relaxed_system = am.load("ase_Atoms", dislocation_dipole_ase, prop=properties)
         return base_system, relaxed_system
 
@@ -268,7 +277,20 @@ class BCCScrewDislocation(WorkingDirectoryMixin):
         dislocation_dipole_ase, properties = dislocation_system.dump("ase_Atoms", return_prop=True)
         return base_system, dislocation_dipole_ase, properties
 
-    def plot_differential_displacement_map(self, dislocation, base_system, dislocation_system):
+    def plot_differential_displacement_map(
+        self, dislocation, base_system, dislocation_system, filename="dd_plot.png"
+    ):
+        """Save a differential-displacement map of the dislocation core.
+
+        Args:
+            dislocation: Atomman dislocation object used to build the systems.
+            base_system: Perfect reference system.
+            dislocation_system: System containing the dislocation dipole.
+            filename: Output figure name inside ``working_dir``.
+
+        Returns:
+            matplotlib.figure.Figure: The DD-map figure.
+        """
 
         lattice_constant = dislocation.ucell.box.a
         burgers_vector = dislocation.dislsol.burgers
@@ -276,7 +298,7 @@ class BCCScrewDislocation(WorkingDirectoryMixin):
         big_dislocation_system = dislocation_system.supersize(1, 1, 3)
         neighbor_cutoff = 0.9 * lattice_constant
         neighbors = big_dislocation_system.neighborlist(cutoff=neighbor_cutoff)
-        filename = self.path("dd_plot.png")
+        filename = self.path(filename)
 
         dd = am.defect.DifferentialDisplacement(
             big_base_system,

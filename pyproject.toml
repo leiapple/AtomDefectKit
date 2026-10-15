@@ -131,3 +131,14 @@ filterwarnings = [
     "ignore:read_text is deprecated\\. Use files\\(\\) instead\\.:DeprecationWarning:DataModelDict",
     "ignore:open_text is deprecated\\. Use files\\(\\) instead\\.:DeprecationWarning:importlib\\.resources\\._legacy",
 ]
+
+[tool.ruff]
+line-length = 120
+extend-exclude = ["demo", "docs"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+# Model metadata carries long, user-facing description strings.
+"src/atomdefectkit/models/*" = ["E501"]

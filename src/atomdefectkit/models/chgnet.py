@@ -10,7 +10,7 @@ from atomdefectkit.registry import register_model
             "type": "str",
             "choices": ["0.3.0", "0.2.0", "r2scan"],
             "description": "Name of the pretrained CHGNet model.",
-            "default:": "0.3.0",
+            "default": "0.3.0",
         },
     },
 )

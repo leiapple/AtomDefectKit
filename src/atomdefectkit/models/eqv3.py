@@ -8,7 +8,6 @@ from urllib.request import urlretrieve
 
 from atomdefectkit.registry import register_model
 
-
 LEGACY_MODEL_CHOICES = [
     "EquiformerV2-83M-S2EF-OC20-2M",
     "EquiformerV2-31M-S2EF-OC20-All+MD",
@@ -111,7 +110,8 @@ EQV3_METADATA = {
 }
 
 
-def _build_impl(params, device):
+@register_model("eqv3", metadata=EQV3_METADATA)
+def _build(params, device):
     """Import and build an OCPCalculator-backed ASE calculator."""
     try:
         from fairchem.core import OCPCalculator
@@ -133,21 +133,8 @@ def _build_impl(params, device):
         use_cpu = device.lower() == "cpu"
     seed = params.get("seed", 42)
 
-    if model_name in EQV3_MODEL_URLS:
-        return OCPCalculator(
-            checkpoint_path=checkpoint_path,
-            cpu=bool(use_cpu),
-            seed=seed,
-        )
-
     return OCPCalculator(
         checkpoint_path=checkpoint_path,
         cpu=bool(use_cpu),
         seed=seed,
     )
-
-
-@register_model("eqv3", metadata=EQV3_METADATA)
-def _build_eqv3(params, device):
-    return _build_impl(params, device)
-
