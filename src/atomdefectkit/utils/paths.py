@@ -23,6 +23,9 @@ def ensure_working_dir(working_dir=".", *parts) -> str:
 def working_path(working_dir, *parts) -> str:
     """Join one or more path components under a working directory.
 
+    Parent directories of the returned path are created, so the path can be
+    passed directly to optimizers, ``savefig`` or ``open``.
+
     Args:
         working_dir: Base output directory.
         *parts: Path components below ``working_dir``.
@@ -30,7 +33,9 @@ def working_path(working_dir, *parts) -> str:
     Returns:
         str: Joined output path.
     """
-    return os.path.join(working_dir, *parts)
+    path = os.path.join(working_dir, *parts)
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    return path
 
 
 class WorkingDirectoryMixin:
@@ -59,3 +64,22 @@ class WorkingDirectoryMixin:
             str: Joined output path.
         """
         return working_path(self.working_dir, *parts)
+
+
+class CalculatorWorkflow(WorkingDirectoryMixin):
+    """Base class for workflows that hold an ASE calculator and an output directory.
+
+    Subclasses store the calculator on ``self.calculator``. ``self.calc`` is kept
+    as an alias for backward compatibility.
+    """
+
+    calculator = None
+
+    @property
+    def calc(self):
+        """Alias of ``self.calculator``."""
+        return self.calculator
+
+    @calc.setter
+    def calc(self, value):
+        self.calculator = value

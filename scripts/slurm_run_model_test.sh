@@ -12,7 +12,8 @@
 set -euo pipefail
 
 PROJECT_DIR="${PROJECT_DIR:-$PWD}"
-MODEL="upet"
+MODEL="${MODEL:-upet}"
+ELEMENTS="${ELEMENTS:-V,Nb,Ta,Mo,W}"
 
 export UV_CACHE_DIR="${UV_CACHE_DIR:-${SCRATCH:-$HOME}/uv-cache}"
 export HF_HOME="${HF_HOME:-${SCRATCH:-$HOME}/huggingface}"
@@ -29,4 +30,4 @@ echo "Virtual environment: $UV_PROJECT_ENVIRONMENT"
 
 uv python install 3.11
 uv sync --extra "$MODEL"
-uv run --extra "$MODEL" python ~/AtomDefectKit/scripts/run_tests_${MODEL}_bcc_elements.py
+uv run --extra "$MODEL" python "$PROJECT_DIR/scripts/run_benchmark.py" --model "$MODEL" --element "$ELEMENTS"

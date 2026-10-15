@@ -23,10 +23,10 @@ Install a single backend extra at a time:
 .. code-block:: bash
 
    uv sync --extra mace
-   uv run --extra mace python scripts/run_tests_mace.py
+   uv run --extra mace python scripts/run_benchmark.py --model mace
 
    uv sync --extra upet
-   uv run --extra upet python scripts/run_tests_upet.py
+   uv run --extra upet python scripts/run_benchmark.py --model upet
 
 For a clean installation directly from GitHub:
 

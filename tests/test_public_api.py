@@ -2,7 +2,6 @@ import pytest
 
 import atomdefectkit
 
-
 EXPECTED_MODELS = {
     "7net",
     "chgnet",
@@ -34,5 +33,15 @@ def test_available_model_metadata_imports_lazy_registrations():
 
 
 def test_load_model_reports_unknown_model():
-    with pytest.raises(ModuleNotFoundError):
+    with pytest.raises(ValueError, match="Unknown model 'does-not-exist'"):
         atomdefectkit.load_model("does-not-exist")
+
+
+def test_load_model_checks_required_parameters():
+    with pytest.raises(ValueError, match="potential_file"):
+        atomdefectkit.load_model("pace", {}, device="cpu")
+
+
+def test_basic_properties_and_load_model_share_errors():
+    with pytest.raises(ValueError, match="Unknown model 'does-not-exist'"):
+        atomdefectkit.BasicProperties(model_name="does-not-exist")

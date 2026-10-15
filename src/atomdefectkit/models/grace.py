@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from atomdefectkit.registry import register_model
 
-
 GRACE_MODEL_CHOICES = [
     "GRACE-1L-SMAX-large",
     "GRACE-1L-SMAX-OMAT-large",

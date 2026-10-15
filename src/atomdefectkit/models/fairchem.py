@@ -1,6 +1,10 @@
 """Implementation of the FAIRCHEM MLIP."""
 
+import logging
+
 from atomdefectkit.registry import register_model
+
+logger = logging.getLogger(__name__)
 
 
 @register_model(
@@ -44,7 +48,7 @@ def _build(params, device):
                 os.environ["CUDA_VISIBLE_DEVICES"] = idx
                 changed_device = True
             else:
-                print(f"Invalid CUDA device index: {idx}, falling back to 'cuda'")
+                logger.warning("Invalid CUDA device index: %s, falling back to 'cuda'", idx)
         device = "cuda"
 
     import random
@@ -74,12 +78,14 @@ def _build(params, device):
     )
     np.random.seed(rng_seed_before)
     random.seed(rng_seed_before)
-    print(f"Changed device: {changed_device}")
     if changed_device:
-        print("Visible device count:", torch.cuda.device_count())
-        print("Current device index:", torch.cuda.current_device())
-        print("Current device name:", torch.cuda.get_device_name(0))
-        print("CUDA_VISIBLE_DEVICES:", os.environ.get("CUDA_VISIBLE_DEVICES"))
+        logger.info(
+            "CUDA_VISIBLE_DEVICES=%s, visible devices=%d, current device=%s (%s)",
+            os.environ.get("CUDA_VISIBLE_DEVICES"),
+            torch.cuda.device_count(),
+            torch.cuda.current_device(),
+            torch.cuda.get_device_name(0),
+        )
 
     return FAIRChemCalculator(
         predictor,

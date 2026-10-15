@@ -6,7 +6,6 @@ from ase.optimize import LBFGS
 from atomdefectkit import load_model
 from atomdefectkit.utils.progress import progress
 
-
 parser = argparse.ArgumentParser(description="Run a simple EqV3/OCPCalculator adsorption example.")
 parser.add_argument(
     "--model-name",

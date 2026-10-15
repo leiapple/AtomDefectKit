@@ -4,17 +4,18 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
-from importlib import resources
 from pathlib import Path
 
+import matplotlib.pyplot as plt
+import numpy as np
 from ase.build.tools import cut, rotate
 from ase.constraints import FixedLine
 from ase.io import write
-import ase.units as units
 
-import numpy as np
-from atomdefectkit.utils.optimizers import build_optimizer, normalize_optimizer_name
-from atomdefectkit.utils.paths import WorkingDirectoryMixin
+from atomdefectkit.data import miller_label, reference_path
+from atomdefectkit.units import EV_PER_A2_TO_J_PER_M2, J_TO_MJ
+from atomdefectkit.utils.optimizers import normalize_optimizer_name, relax
+from atomdefectkit.utils.paths import CalculatorWorkflow
 from atomdefectkit.utils.plotting import plot_xy_curves
 
 
@@ -71,7 +72,7 @@ class StackingFaultCurve:
         return float(np.min(energies[1:-1]))
 
 
-class StackingFaultWorkflow(WorkingDirectoryMixin):
+class StackingFaultWorkflow(CalculatorWorkflow):
     """Build, relax, and plot generalized stacking-fault energy curves."""
 
     def __init__(
@@ -98,41 +99,29 @@ class StackingFaultWorkflow(WorkingDirectoryMixin):
             ValueError: If ``optimizer`` is not one of the supported names.
         """
         self.atoms = atoms.copy()
-        self.calc = calculator
+        self.calculator = calculator
         self.formula = formula or self.atoms.get_chemical_formula()
         self.info = info
         self.optimizer = normalize_optimizer_name(optimizer)
         self.init_working_dir(working_dir)
 
-    @staticmethod
-    def _project_root() -> Path:
-        return Path(__file__).resolve().parents[2]
-
     def _reference_curve_path(self, miller) -> Path | None:
-        miller_label = "".join(str(abs(int(index))) for index in miller)
-        filename = f"{self.formula}_{miller_label}.csv"
-
-        for package_name in (
-            "atomdefectkit.data.StackingFaults",
-            "atomdefectkit.data.stacking_faults",
-        ):
-            try:
-                packaged = resources.files(package_name).joinpath(filename)
-            except ModuleNotFoundError:
-                continue
-            if packaged.is_file():
-                return Path(packaged)
-
-        for directory_name in ("StackingFaults", "stacking_faults"):
-            candidate = self._project_root() / "data" / directory_name / filename
-            if candidate.exists():
-                return candidate
+        """Return the packaged DFT stacking-fault curve for ``miller``, if any."""
+        label = miller_label(miller)
+        candidates = [self.formula]
+        symbols = set(self.atoms.get_chemical_symbols())
+        if len(symbols) == 1:
+            candidates.append(symbols.pop())
+        for prefix in candidates:
+            path = reference_path("stacking_fault", f"{prefix}_{label}.csv")
+            if path is not None:
+                return path
         return None
 
     @staticmethod
     def _format_reference_curve(reference_curve: np.ndarray, miller) -> tuple[np.ndarray, np.ndarray]:
         x_values = reference_curve[:, 0]
-        y_values = reference_curve[:, 1] * 1000
+        y_values = reference_curve[:, 1] * J_TO_MJ
 
         miller_abs = tuple(abs(int(index)) for index in miller)
         if miller_abs == (1, 1, 2):
@@ -152,14 +141,14 @@ class StackingFaultWorkflow(WorkingDirectoryMixin):
         Returns:
             ase.Atoms: Relaxed structure.
         """
-        atoms.calc = self.calc
-        optimizer = build_optimizer(
+        return relax(
             atoms,
-            self.optimizer,
+            self.calculator,
+            optimizer=self.optimizer,
+            fmax=fmax,
+            steps=steps,
             logfile=self.path(logfile),
         )
-        optimizer.run(fmax=fmax, steps=steps)
-        return atoms
 
     @staticmethod
     def _constrain_xy(atoms):
@@ -221,7 +210,8 @@ class StackingFaultWorkflow(WorkingDirectoryMixin):
         Returns
         -------
         list[float]
-            Stacking-fault energies in eV/Angstrom^2 relative to the unshifted slab.
+            Stacking-fault energies in J/m^2 relative to the unshifted slab.
+            Text and plot outputs are written in mJ/m^2.
         """
         slab = cut(
             self.atoms.copy(),
@@ -261,7 +251,7 @@ class StackingFaultWorkflow(WorkingDirectoryMixin):
                 steps=steps,
                 logfile=f"stacking_fault_step_{i}.log",
             )
-            defect_energy = 1 / units.J / (1/units.m ** 2) * slab_shift.get_potential_energy() / area
+            defect_energy = EV_PER_A2_TO_J_PER_M2 * slab_shift.get_potential_energy() / area
             energies.append(defect_energy)
             if write_xyz:
                 write(xyz_path, self._strip_for_xyz(slab_shift), append=True)
@@ -272,20 +262,20 @@ class StackingFaultWorkflow(WorkingDirectoryMixin):
 
         out_path = self.path(f"{self.formula}_{miller_str}_stacking_fault.out")
         fig_path = self.path(f"{self.formula}_{miller_str}_stacking_fault.png")
-        summary_path = self.path(f"{self.formula}_{miller_str}_stacking_fault.out")
+        summary_path = self.path(f"{self.formula}_stacking_fault_summary.txt")
 
         with open(out_path, "w", encoding="utf-8") as file:
-            file.write("Reaction_Coordinate   Energy(meV/A^2)\n")
+            file.write("Reaction_Coordinate   Energy(mJ/m^2)\n")
             for coord, energy in zip(coords, energies):
-                file.write(f"{coord:.4f}   {energy * 1000:.4f}\n")
+                file.write(f"{coord:.4f}   {energy * J_TO_MJ:.4f}\n")
 
         with open(summary_path, "a", encoding="utf-8") as file:
             print(
-                f"{self.info:<12}{miller} Stacking_Fault: {max(energies) * 1000:.4f} meV/A^2",
+                f"{self.info:<12}{miller} Stacking_Fault: {max(energies) * J_TO_MJ:.4f} mJ/m^2",
                 file=file,
             )
 
-        curves = [{"x": coords, "y": energies * 1000, "marker": "o", "label": self.info}]
+        curves = [{"x": coords, "y": energies * J_TO_MJ, "marker": "o", "label": self.info}]
         reference_path = self._reference_curve_path(miller)
         if reference_path is not None:
             reference_curve = np.loadtxt(reference_path, delimiter=",")
@@ -299,14 +289,15 @@ class StackingFaultWorkflow(WorkingDirectoryMixin):
                 }
             )
 
-        plot_xy_curves(
+        fig, _ = plot_xy_curves(
             curves=curves,
             xlabel="Reaction Coordinate",
-            ylabel="Energy (meV/A^2)",
+            ylabel="Energy (mJ/m²)",
             title="Stacking-Fault Curve",
             save_path=fig_path,
             figsize=(5, 4),
             show_legend=True,
         )
+        plt.close(fig)
 
         return energies.tolist()

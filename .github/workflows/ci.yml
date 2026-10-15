@@ -27,6 +27,9 @@ jobs:
       - name: Check lockfile
         run: uv lock --check
 
+      - name: Lint
+        run: uvx ruff@0.8.6 check src tests scripts
+
       - name: Run tests
         run: uv run --python ${{ matrix.python-version }} --group dev pytest
 

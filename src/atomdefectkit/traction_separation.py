@@ -2,20 +2,20 @@
 
 from __future__ import annotations
 
-import os
 from dataclasses import dataclass
-from importlib import resources
 from pathlib import Path
 
-from ase import Atom, Atoms
-from ase.filters import UnitCellFilter
-from ase.io import write
-import matplotlib.pyplot as plt
-from matplotlib.colors import Normalize
 import matplotlib.cm as cm
+import matplotlib.pyplot as plt
 import numpy as np
-from atomdefectkit.utils.optimizers import build_optimizer, normalize_optimizer_name
-from atomdefectkit.utils.paths import WorkingDirectoryMixin
+from ase import Atom, Atoms
+from ase.io import write
+from matplotlib.colors import Normalize
+
+from atomdefectkit.data import miller_label, reference_path
+from atomdefectkit.units import EV_PER_A3_TO_GPA, GPA_A_TO_J_PER_M2
+from atomdefectkit.utils.optimizers import normalize_optimizer_name, relax
+from atomdefectkit.utils.paths import CalculatorWorkflow
 from atomdefectkit.utils.plotting import plot_xy_curves
 from atomdefectkit.utils.slabs import build_repeated_slab, build_surface_slab
 
@@ -77,7 +77,7 @@ class TractionSeparationCurve:
         return float(np.max(values))
 
 
-class TractionSeparationWorkflow(WorkingDirectoryMixin):
+class TractionSeparationWorkflow(CalculatorWorkflow):
     """Build and analyze traction-separation curves for pure and H-decorated slabs."""
 
     def __init__(
@@ -106,7 +106,7 @@ class TractionSeparationWorkflow(WorkingDirectoryMixin):
             ValueError: If an optimizer is not one of the supported names.
         """
         self.atoms = atoms
-        self.calc = calculator
+        self.calculator = calculator
         self.surface_index = surface_index
         self.repeat = repeat
         self.init_working_dir(working_dir)
@@ -119,34 +119,12 @@ class TractionSeparationWorkflow(WorkingDirectoryMixin):
                     "surface_index must be one of (1, 0, 0), (1, 1, 0), or (1, 1, 1)."
                 )
 
-    @staticmethod
-    def _project_root() -> Path:
-        return Path(__file__).resolve().parents[2]
-
     def _reference_curve_path(self) -> Path | None:
+        """Return the packaged DFT traction-separation curve for this surface, if any."""
         if self.surface_index is None:
             return None
-
         element = self.atoms[0].symbol
-        surface_label = "".join(str(abs(int(index))) for index in self.surface_index)
-        filename = f"ts_{element}_{surface_label}.csv"
-
-        for package_name in (
-            "atomdefectkit.data.TractionSeparation",
-            "atomdefectkit.data.traction_separation",
-        ):
-            try:
-                packaged = resources.files(package_name).joinpath(filename)
-            except ModuleNotFoundError:
-                continue
-            if packaged.is_file():
-                return Path(packaged)
-
-        for directory_name in ("TractionSeparation", "traction_separation"):
-            candidate = self._project_root() / "data" / directory_name / filename
-            if candidate.exists():
-                return candidate
-        return None
+        return reference_path("traction_separation", f"ts_{element}_{miller_label(self.surface_index)}.csv")
 
     def generate_tetra_sites(self, cell: np.ndarray, nx: int, ny: int, eps: float = 1e-3):
         """Tile the reference tetrahedral H sites across the in-plane supercell.
@@ -250,17 +228,12 @@ class TractionSeparationWorkflow(WorkingDirectoryMixin):
         Returns:
             tuple[np.ndarray, np.ndarray]: Midpoint separations and tractions in GPa.
         """
-        n = len(seps) - 1
-        sepas = np.empty(n)
-        tracs = np.empty(n)
-        for i in range(n):
-            sep0, sep1 = seps[i], seps[i + 1]
-            E0, E1 = energies[i], energies[i + 1]
-            A0, A1 = areas[i], areas[i + 1]
-            sepas[i] = 0.5 * (sep0 + sep1)
-            area_avg = 0.5 * (A0 + A1)
-            eVA32GPa = 160.2176621
-            tracs[i] = eVA32GPa * (E1 - E0) / (area_avg * (sep1 - sep0))
+        seps = np.asarray(seps, dtype=float)
+        energies = np.asarray(energies, dtype=float)
+        areas = np.asarray(areas, dtype=float)
+        sepas = 0.5 * (seps[1:] + seps[:-1])
+        area_avg = 0.5 * (areas[1:] + areas[:-1])
+        tracs = EV_PER_A3_TO_GPA * np.diff(energies) / (area_avg * np.diff(seps))
         return sepas, tracs
 
     @staticmethod
@@ -279,10 +252,10 @@ class TractionSeparationWorkflow(WorkingDirectoryMixin):
         symbols = atoms.get_chemical_symbols()
         zmid = atoms.get_cell()[2, 2] / 2.0
 
-        fe_idx = [i for i, symbol in enumerate(symbols) if symbol != "H"]
-        z_fe = z[fe_idx]
-        bottom_surface_z = z_fe[z_fe < zmid].max()
-        top_surface_z = z_fe[z_fe > zmid].min()
+        host_idx = [i for i, symbol in enumerate(symbols) if symbol != "H"]
+        z_host = z[host_idx]
+        bottom_surface_z = z_host[z_host < zmid].max()
+        top_surface_z = z_host[z_host > zmid].min()
 
         nH_bottom = 0
         nH_top = 0
@@ -325,22 +298,22 @@ class TractionSeparationWorkflow(WorkingDirectoryMixin):
         optimizer = normalize_optimizer_name(optimizer or self.optimizer)
         cell_optimizer = normalize_optimizer_name(cell_optimizer)
 
-        atoms.calc = self.calc
-        ucf = UnitCellFilter(atoms)
-
-        cell_logfile = self.path(f"{cell_optimizer.lower()}_box_relax_H{nH}.log")
-        os.makedirs(os.path.dirname(cell_logfile) or ".", exist_ok=True)
-        opt = build_optimizer(ucf, cell_optimizer, logfile=cell_logfile)
-        opt.run(fmax=fmax_cell, steps=steps)
-
-        atom_logfile = self.path(f"{optimizer.lower()}_relax_H{nH}.log")
-        os.makedirs(os.path.dirname(atom_logfile) or ".", exist_ok=True)
-        opt2 = build_optimizer(
+        relax(
             atoms,
-            optimizer,
-            logfile=atom_logfile,
+            self.calculator,
+            optimizer=cell_optimizer,
+            fmax=fmax_cell,
+            steps=steps,
+            logfile=self.path(f"{cell_optimizer.lower()}_box_relax_H{nH}.log"),
+            cell_filter="unitcell",
         )
-        opt2.run(fmax=fmax_atoms, steps=steps)
+        relax(
+            atoms,
+            optimizer=optimizer,
+            fmax=fmax_atoms,
+            steps=steps,
+            logfile=self.path(f"{optimizer.lower()}_relax_H{nH}.log"),
+        )
         atoms.set_constraint()
         return atoms
 
@@ -349,13 +322,15 @@ class TractionSeparationWorkflow(WorkingDirectoryMixin):
 
         Args:
             slab: Reference slab without H.
-            nH: Total number of H atoms to add.
+            nH: Total number of H atoms to add; must be even.
             top_sites: Candidate adsorption sites on the top surface.
             bot_sites: Candidate adsorption sites on the bottom surface.
 
         Returns:
             ase.Atoms: Copied slab decorated with H atoms.
         """
+        if nH % 2:
+            raise ValueError(f"nH must be even so both surfaces get the same coverage, got {nH}.")
         struct = slab.copy()
         k_each = nH // 2
         chosen_top = top_sites[:k_each]
@@ -385,7 +360,7 @@ class TractionSeparationWorkflow(WorkingDirectoryMixin):
 
         for step_idx, vac in enumerate(vacuum_values):
             geom = self.make_gap_from_base(base, vac)
-            geom.calc = self.calc
+            geom.calc = self.calculator
             energy = geom.get_potential_energy()
 
             energies.append(energy)
@@ -451,7 +426,7 @@ class TractionSeparationWorkflow(WorkingDirectoryMixin):
             "midpoint_separation": mid_seps,
             "traction": tractions,
             "curve": TractionSeparationCurve.from_arrays(seps, energies, area=float(np.mean(areas))),
-            "surface_energy_J_m2": float(_integrate_trapezoid(tractions, mid_seps) * 0.1 / 2.0),
+            "surface_energy_J_m2": float(_integrate_trapezoid(tractions, mid_seps) * GPA_A_TO_J_PER_M2 / 2.0),
             "sigma_max_GPa": float(np.max(tractions)),
         }
 
@@ -543,7 +518,7 @@ class TractionSeparationWorkflow(WorkingDirectoryMixin):
             theta_eff[nH] = theta
 
             area_GPa_A = _integrate_trapezoid(mean_y, x)
-            gamma_data[nH] = area_GPa_A * 0.1 / 2.0
+            gamma_data[nH] = area_GPa_A * GPA_A_TO_J_PER_M2 / 2.0
             sigma_max[nH] = mean_y.max()
 
         results = {
