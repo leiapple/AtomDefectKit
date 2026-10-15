@@ -1,0 +1,79 @@
+Ordered B2 workflow
+===================
+
+The B2 layer keeps crystal chemistry and slip geometry explicit while reusing
+AtomDefectKit's model loaders, bulk-property methods, stacking-fault workflow,
+and NEB implementation.
+
+.. code-block:: python
+
+   from atomdefectkit.b2 import B2Crystal, B2SlipSystem, B2Workflow
+
+   workflow = B2Workflow(
+       B2Crystal(("Ni", "Al"), lattice_constant=2.88),
+       model_name="grace",
+       model_parameters={
+           "model_size": "small",
+           "num_layers": 1,
+           "model_task": "OMAT",
+       },
+       device="cpu",
+       working_dir="B2_NiAl_grace",
+   )
+
+   _, _, a0 = workflow.calculate_equilibrium_lattice_constant()
+   cij = workflow.calculate_elastic_constants(a0)
+
+   gamma_lines = workflow.calculate_gamma_lines(
+       [
+           B2SlipSystem(
+               plane=(0, 1, 1),
+               direction=(1, 0, 0),
+               translation_fraction=1.0,
+               name="{011}<100>",
+           ),
+           B2SlipSystem(
+               plane=(1, -1, 0),
+               direction=(1, 1, 1),
+               translation_fraction=1.0,
+               name="{1-10}<111>",
+           ),
+       ],
+       lattice_constant=a0,
+   )
+
+Each path retains its individual stacking-fault plot. The multi-path method also
+writes ``gamma_lines/b2_gamma_lines.csv`` and
+``gamma_lines/b2_gamma_lines.png`` for direct comparison. The full
+``<111>`` translation is used so that the ordered lattice is restored at the
+endpoint; the half-translation APB-related state appears at reaction coordinate
+0.5.
+
+Peierls NEB calculations require atom-matched initial and final dislocation
+configurations. This is deliberate: B2 dislocation construction, core type,
+cell multiplicity, and sublattice ordering must be selected explicitly rather
+than inherited from the elemental BCC defaults.
+
+The endpoint workflow also requires ``dislocation_count``. Its saved CSV keeps
+both the total cell energy and the relative energy per dislocation, avoiding
+the factor-of-two assumption used by the original elemental-BCC dipole plotter.
+
+Peierls stress convention
+--------------------------
+
+For a sinusoidal energy per unit length,
+
+.. math::
+
+   U(x) = E_P\left[1 - \cos\left(2\pi x/\lambda\right)\right],
+
+force balance gives
+
+.. math::
+
+   \tau_P = \frac{2\pi E_P}{b\lambda}.
+
+Here ``E_P`` is the sinusoidal amplitude. A reported NEB peak-to-valley barrier
+is ``2 E_P`` under this definition. The helper
+``estimate_sinusoidal_peierls_stress`` requires the convention, line length,
+dislocation count, Burgers-vector magnitude, and migration period explicitly.

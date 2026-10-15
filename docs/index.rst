@@ -22,5 +22,6 @@ Contents
    installation
    models
    workflows
+   b2
    examples
    api

@@ -30,6 +30,13 @@ class BCCScrewDislocPeierlsBarrier(WorkingDirectoryMixin):
         optimizer="FIRE",
         working_dir=".",
     ):
+        if len(initial_config) != len(final_config):
+            raise ValueError("Initial and final NEB configurations must have equal atom counts.")
+        if initial_config.get_chemical_symbols() != final_config.get_chemical_symbols():
+            raise ValueError(
+                "Initial and final NEB configurations must have identical chemical "
+                "symbols in the same atom order."
+            )
         self.initial_config = initial_config
         self.final_config = final_config
         self.model_name = model_name
@@ -94,26 +101,54 @@ class BCCScrewDislocPeierlsBarrier(WorkingDirectoryMixin):
         return pos_f
 
     @staticmethod
-    def _interpolate(initial, final, ratio):
-        for config in [initial, final]:
-            if config.constraints:
-                del config.constraints
+    def _interpolate(
+        initial,
+        final,
+        ratio,
+        preserve_constraints=False,
+        remove_translation=True,
+    ):
         pos_i = initial.get_positions()
         pos_f = final.get_positions()
         delta = pos_f - pos_i
-        com = np.mean(delta, axis=0)
-        interp_pos = pos_i + ratio * (delta - com)
+        translation = np.mean(delta, axis=0) if remove_translation else np.zeros(3)
+        interp_pos = pos_i + ratio * (delta - translation)
         image = initial.copy()
-        image.set_positions(interp_pos)
+        if not preserve_constraints and image.constraints:
+            del image.constraints
+        image.set_positions(interp_pos, apply_constraint=preserve_constraints)
         return image
 
-    def run_neb(self, fmax=0.001, steps=10000, spring_constant=0.5):
+    def run_neb(
+        self,
+        fmax=0.001,
+        steps=10000,
+        spring_constant=0.5,
+        preserve_constraints=False,
+        remove_translation=True,
+        require_same_cell=False,
+    ):
         initial = self.initial_config.copy()
         final = self.final_config.copy()
-        final.set_cell(initial.get_cell(), scale_atoms=True)
+        if require_same_cell and not np.array_equal(
+            initial.cell.array,
+            final.cell.array,
+        ):
+            raise ValueError("Fixed-cell NEB endpoints must have identical cells.")
+        if not require_same_cell:
+            final.set_cell(initial.get_cell(), scale_atoms=True)
         final.set_positions(self._fix_pbc_issues(initial, final))
 
-        images = [self._interpolate(initial, final, r) for r in np.linspace(0, 1, self.Nreplica)]
+        images = [
+            self._interpolate(
+                initial,
+                final,
+                ratio,
+                preserve_constraints=preserve_constraints,
+                remove_translation=remove_translation,
+            )
+            for ratio in np.linspace(0, 1, self.Nreplica)
+        ]
         for image in images:
             image.calc = self.calc
 
@@ -125,6 +160,7 @@ class BCCScrewDislocPeierlsBarrier(WorkingDirectoryMixin):
             trajectory=self.path("neb.traj"),
         )
         optimizer.run(fmax=fmax, steps=steps)
+        return images
 
     def plot_barrier(
         self,

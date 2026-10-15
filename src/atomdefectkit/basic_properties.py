@@ -24,6 +24,7 @@ from atomdefectkit.model_errors import (
     format_unknown_model_error,
 )
 from atomdefectkit.registry import MODEL_REGISTRY
+from atomdefectkit.utils.calculators import ensure_scalar_energy_calculator
 from atomdefectkit.utils.paths import WorkingDirectoryMixin
 from atomdefectkit.utils.slabs import build_surface_slab
 
@@ -66,7 +67,7 @@ class BasicProperties(WorkingDirectoryMixin):
         self.init_working_dir(working_dir)
 
         if calculator is not None:
-            self.calculator = calculator
+            self.calculator = ensure_scalar_energy_calculator(calculator)
             return
 
         model_name = model_name.lower()
@@ -139,7 +140,7 @@ class BasicProperties(WorkingDirectoryMixin):
         if calculator is None:
             raise RuntimeError(f"Builder for '{model_name}' returned None")
 
-        self.calculator = calculator
+        self.calculator = ensure_scalar_energy_calculator(calculator)
 
     def get_calculator(self):
         """Return the ASE calculator attached to this workflow.
@@ -284,7 +285,16 @@ class BasicProperties(WorkingDirectoryMixin):
             atoms_scaled.set_cell(atoms.cell * scale, scale_atoms=True)
             atoms_scaled.calc = self.calculator
             volumes.append(atoms_scaled.get_volume())
-            energies.append(atoms_scaled.get_potential_energy())
+            energy = np.asarray(
+                atoms_scaled.get_potential_energy(),
+                dtype=float,
+            )
+            if energy.size != 1:
+                raise ValueError(
+                    "Expected the calculator to return one total energy, "
+                    f"but received an array with shape {energy.shape}."
+                )
+            energies.append(energy.item())
 
         _, _, _, V0 = self.fit_birch_murnaghan(np.array(volumes), np.array(energies))
         equilibrium_lattice_constant = V0 ** (1.0 / 3.0)

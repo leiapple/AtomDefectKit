@@ -8,9 +8,8 @@ from importlib import resources
 from pathlib import Path
 
 from ase.build.tools import cut, rotate
-from ase.constraints import FixedLine
+from ase.constraints import FixedLine, FixedPlane
 from ase.io import write
-import ase.units as units
 
 import numpy as np
 from atomdefectkit.utils.optimizers import build_optimizer, normalize_optimizer_name
@@ -185,6 +184,27 @@ class StackingFaultWorkflow(WorkingDirectoryMixin):
         clean.constraints = []
         return clean
 
+    @staticmethod
+    def _constrain_normal(atoms):
+        """Prevent motion normal to the oriented fault plane.
+
+        The slab builder rotates the fault-plane normal onto Cartesian z, so a
+        ``FixedPlane`` constraint with a z normal permits relaxation only in
+        the fault plane.
+        """
+        atoms.set_constraint(
+            FixedPlane(
+                indices=list(range(len(atoms))),
+                direction=[0.0, 0.0, 1.0],
+            )
+        )
+
+
+    def _prepare_slab(self, slab):
+        """Apply workflow-specific changes before relaxing the reference slab."""
+        return slab
+
+
     def stacking_fault(
         self,
         a,
@@ -196,6 +216,8 @@ class StackingFaultWorkflow(WorkingDirectoryMixin):
         fmax=0.01,
         steps=1000,
         write_xyz=True,
+        fix_normal=False,
+        initial_shift=(0.0, 0.0, 0.0),
     ) -> list[float]:
         """Calculate a generalized stacking-fault energy curve.
 
@@ -217,6 +239,13 @@ class StackingFaultWorkflow(WorkingDirectoryMixin):
             Maximum optimizer steps for each relaxation.
         write_xyz : bool
             Whether to write each relaxed shifted slab to an XYZ trajectory.
+        fix_normal : bool
+            If True, prevent atomic relaxation normal to the fault plane and
+            allow in-plane relaxation. If False, retain the original behavior
+            of allowing only normal relaxation.
+        initial_shift : sequence[float]
+            Initial fault translation in the oriented slab's Cartesian frame,
+            in Angstrom. Energies remain relative to the unfaulted slab.
 
         Returns
         -------
@@ -235,6 +264,7 @@ class StackingFaultWorkflow(WorkingDirectoryMixin):
             maxatoms=None,
         )
         rotate(slab, a, (1, 0, 0), b, (0, 1, 0), center=(0, 0, 0))
+        slab = self._prepare_slab(slab)
         slab = self._relax(slab, fmax=fmax, steps=steps, logfile="stacking_fault_slab_relax.log")
         slab.center(vacuum=10.0, axis=2)
 
@@ -242,6 +272,9 @@ class StackingFaultWorkflow(WorkingDirectoryMixin):
         area = np.linalg.norm(np.cross(box[0], box[1]))
 
         shift_distance = np.linalg.norm(np.asarray(a, dtype=float)) * distance
+        initial_shift = np.asarray(initial_shift, dtype=float)
+        if initial_shift.shape != (3,) or not np.all(np.isfinite(initial_shift)):
+            raise ValueError("initial_shift must contain three finite Cartesian components.")
         shift_indices = [atom.index for atom in slab if atom.position[2] > 0.5 * slab.cell[2][2]]
         slide_step = shift_distance / num_steps
 
@@ -251,23 +284,38 @@ class StackingFaultWorkflow(WorkingDirectoryMixin):
             os.remove(xyz_path)
 
         energies = []
+        reference_energy = None
+        if np.any(initial_shift):
+            reference = slab.copy()
+            if fix_normal:
+                self._constrain_normal(reference)
+            else:
+                self._constrain_xy(reference)
+            reference = self._relax(
+                reference, fmax=fmax, steps=steps,
+                logfile="stacking_fault_reference_relax.log",
+            )
+            reference_energy = reference.get_potential_energy() / area
         for i in range(num_steps + 1):
             slab_shift = slab.copy()
-            slab_shift.positions[shift_indices] += [slide_step * i, 0, 0]
-            self._constrain_xy(slab_shift)
+            slab_shift.positions[shift_indices] += initial_shift + [slide_step * i, 0, 0]
+            if fix_normal:
+                self._constrain_normal(slab_shift)
+            else:
+                self._constrain_xy(slab_shift)
             slab_shift = self._relax(
                 slab_shift,
                 fmax=fmax,
                 steps=steps,
                 logfile=f"stacking_fault_step_{i}.log",
             )
-            defect_energy = 1 / units.J / (1/units.m ** 2) * slab_shift.get_potential_energy() / area
+            defect_energy = slab_shift.get_potential_energy() / area
             energies.append(defect_energy)
             if write_xyz:
                 write(xyz_path, self._strip_for_xyz(slab_shift), append=True)
 
         energies = np.asarray(energies)
-        energies -= energies[0]
+        energies -= energies[0] if reference_energy is None else reference_energy
         coords = np.linspace(0, 1, len(energies))
 
         out_path = self.path(f"{self.formula}_{miller_str}_stacking_fault.out")

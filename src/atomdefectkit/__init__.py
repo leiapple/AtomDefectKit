@@ -1,6 +1,10 @@
 import importlib
 
 from atomdefectkit.basic_properties import BasicProperties
+from atomdefectkit.b2 import (
+    B2Crystal, B2PeierlsBarrier, B2SlipSystem, B2Workflow,
+    estimate_sinusoidal_peierls_stress,
+)
 from atomdefectkit.model_discovery import discover_models
 from atomdefectkit.registry import MODEL_METADATA, MODEL_REGISTRY
 from atomdefectkit.stacking_fault import StackingFaultCurve, StackingFaultWorkflow
