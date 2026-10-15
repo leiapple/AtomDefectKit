@@ -9,6 +9,7 @@ import atomman.unitconvert as uc
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+from ase.build import bulk
 from ase.data import atomic_numbers
 from ase.geometry import find_mic, wrap_positions
 
@@ -182,12 +183,13 @@ class BCCScrewDislocation(CalculatorWorkflow):
             ValueError: If the elastic constants are mechanically unstable.
         """
         self.validate_cubic_elastic_constants()
-        alat = uc.set_in_units(self.a0, "angstrom")
         C11 = uc.set_in_units(self.cij[0,0], "GPa")
         C12 = uc.set_in_units(self.cij[0,1], "GPa")
         C44 = uc.set_in_units(self.cij[3,3], "GPa")
 
-        unit_cell = am.load("prototype", "A2--W--bcc", a=alat, symbols=self.element)
+        # Build the conventional BCC cell locally: the "A2--W--bcc" prototype
+        # lookup queries the NIST database, which fails on offline compute nodes.
+        unit_cell = am.load("ase_Atoms", bulk(self.element, "bcc", a=self.a0, cubic=True))
         elastic_constants = am.ElasticConstants(C11=C11, C12=C12, C44=C44)
 
         burgers_vector = np.array([0.5, 0.5, 0.5])
@@ -230,6 +232,7 @@ class BCCScrewDislocation(CalculatorWorkflow):
         fmax=0.01,
         optimizer="BFGS",
         logfile=None,
+        steps=None,
     ):
         """Build and relax a screw-dislocation dipole.
 
@@ -239,6 +242,7 @@ class BCCScrewDislocation(CalculatorWorkflow):
             fmax: Force convergence threshold.
             optimizer: ASE optimizer label.
             logfile: Optional optimizer logfile saved under ``working_dir``.
+            steps: Optional maximum number of optimizer steps.
 
         Returns:
             tuple: Base atomman system and relaxed dislocation atomman system.
@@ -254,6 +258,7 @@ class BCCScrewDislocation(CalculatorWorkflow):
             self.calculator,
             optimizer=optimizer_name,
             fmax=fmax,
+            steps=steps,
             logfile=self.path(logfile),
         )
         relaxed_system = am.load("ase_Atoms", dislocation_dipole_ase, prop=properties)
