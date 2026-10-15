@@ -1,5 +1,12 @@
 """Atomistic defect workflows and model-loader utilities."""
 
+from atomdefectkit.b2 import (
+    B2Crystal,
+    B2PeierlsBarrier,
+    B2SlipSystem,
+    B2Workflow,
+    estimate_sinusoidal_peierls_stress,
+)
 from atomdefectkit.basic_properties import BasicProperties
 from atomdefectkit.model_discovery import discover_models
 from atomdefectkit.model_loader import import_model_module, load_model
@@ -11,6 +18,11 @@ from atomdefectkit.traction_separation import (
 )
 
 __all__ = [
+    "B2Crystal",
+    "B2PeierlsBarrier",
+    "B2SlipSystem",
+    "B2Workflow",
+    "estimate_sinusoidal_peierls_stress",
     "MODEL_METADATA",
     "MODEL_REGISTRY",
     "BasicProperties",

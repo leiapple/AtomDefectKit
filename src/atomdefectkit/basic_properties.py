@@ -16,6 +16,7 @@ from scipy.optimize import least_squares
 from atomdefectkit.data import reference_path
 from atomdefectkit.model_loader import load_model
 from atomdefectkit.units import EV_PER_A2_TO_J_PER_M2
+from atomdefectkit.utils.calculators import ensure_scalar_energy_calculator
 from atomdefectkit.utils.optimizers import relax
 from atomdefectkit.utils.paths import CalculatorWorkflow
 from atomdefectkit.utils.slabs import build_surface_slab
@@ -61,7 +62,7 @@ class BasicProperties(CalculatorWorkflow):
 
         self.device = device
         self.init_working_dir(working_dir)
-        self.calculator = (
+        self.calculator = ensure_scalar_energy_calculator(
             calculator if calculator is not None else load_model(model_name, model_parameters, device=device)
         )
 
@@ -234,7 +235,13 @@ class BasicProperties(CalculatorWorkflow):
             atoms_scaled.set_cell(atoms.cell * scale, scale_atoms=True)
             atoms_scaled.calc = self.calculator
             volumes.append(atoms_scaled.get_volume())
-            energies.append(atoms_scaled.get_potential_energy())
+            energy = np.asarray(atoms_scaled.get_potential_energy(), dtype=float)
+            if energy.size != 1:
+                raise ValueError(
+                    "Expected the calculator to return one total energy, "
+                    f"but received an array with shape {energy.shape}."
+                )
+            energies.append(energy.item())
 
         volumes = np.array(volumes)
         energies = np.array(energies)

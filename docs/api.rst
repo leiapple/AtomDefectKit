@@ -14,6 +14,10 @@ Top-level package
 Core workflows
 --------------
 
+.. automodule:: atomdefectkit.b2
+   :members:
+   :undoc-members:
+
 .. automodule:: atomdefectkit.basic_properties
    :members:
    :undoc-members:
