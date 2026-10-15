@@ -16,8 +16,21 @@ Current migrated components:
 ### Package layout
 
 ```text
-AtomDefectKit/
-
+src/atomdefectkit/
+  basic_properties.py     # EOS, elastic constants, point defects, surfaces, phonons
+  stacking_fault.py       # generalized stacking-fault curves
+  traction_separation.py  # traction-separation curves, incl. H coverage
+  screw.py                # BCC screw-dislocation dipoles and DD maps
+  neb.py                  # Peierls barrier NEB and core trajectory
+  benchmarks.py           # run_bcc_benchmark(): every workflow for one element
+  model_loader.py         # load_model(): build a calculator from a backend
+  models/                 # one registered loader per MLIP backend
+  data/                   # packaged DFT reference data + reference_path()
+  units.py                # named unit conversions
+  utils/                  # optimizers/relax, paths, plotting, slabs, progress
+scripts/
+  run_benchmark.py        # command-line benchmark driver for any backend
+  slurm_run_model_test.sh # SLURM template
 ```
 
 ### Model registration note
@@ -61,19 +74,19 @@ Each MLIP backend is exposed as an optional dependency extra. These extras are i
 
 ```bash
 uv sync --extra fairchem
-uv run --extra fairchem python scripts/run_tests_fairchem.py
+uv run --extra fairchem python scripts/run_benchmark.py --model fairchem
 
 uv sync --extra mace
-uv run --extra mace python scripts/run_tests_mace.py
+uv run --extra mace python scripts/run_benchmark.py --model mace
 
 uv sync --extra 7net
-uv run --extra 7net python scripts/run_tests_7net.py
+uv run --extra 7net python scripts/run_benchmark.py --model 7net
 
 uv sync --extra upet
-uv run --extra upet python scripts/run_tests_upet.py
+uv run --extra upet python scripts/run_benchmark.py --model upet
 
 uv sync --extra grace
-uv run --extra grace python scripts/run_tests_grace.py
+uv run --extra grace python scripts/run_benchmark.py --model grace
 
 uv sync --extra eqv3
 uv run --extra eqv3 python scripts/run_test_eqv3_adsorption.py --model-name eqV3-omat24-gradient
@@ -91,15 +104,15 @@ For PACE-backed workflows, sync the PACE extra:
 
 ```bash
 uv sync --extra pace
-uv run --extra pace python scripts/run_tests_pace.py
+uv run --extra pace python scripts/run_benchmark.py --model pace --model-params '{"potential_file": "/path/to/potential.yaml"}'
 ```
 
 If you run `uv` from outside the repository, `--extra` has no effect unless you point `uv` at this project. Use `--project` with the path to the cloned repository:
 
 ```bash
 uv sync --project /path/to/AtomDefectKit --extra upet
-uv run --project /path/to/AtomDefectKit --extra upet python /path/to/AtomDefectKit/scripts/run_tests_upet.py
-uv run --project /path/to/AtomDefectKit --extra upet python /path/to/AtomDefectKit/scripts/run_tests_upet_bcc_elements.py
+uv run --project /path/to/AtomDefectKit --extra upet python /path/to/AtomDefectKit/scripts/run_benchmark.py --model upet
+uv run --project /path/to/AtomDefectKit --extra upet python /path/to/AtomDefectKit/scripts/run_benchmark.py --model upet --element V,Nb,Ta,Mo,W
 ```
 
 If you do not want to run inside the repository checkout, create a clean working
@@ -187,10 +200,10 @@ If you want to keep separate persistent virtual environments for different model
 
 ```bash
 UV_PROJECT_ENVIRONMENT=.venv-fairchem uv sync --extra fairchem
-UV_PROJECT_ENVIRONMENT=.venv-fairchem uv run --extra fairchem python scripts/run_tests_fairchem.py
+UV_PROJECT_ENVIRONMENT=.venv-fairchem uv run --extra fairchem python scripts/run_benchmark.py --model fairchem
 
 UV_PROJECT_ENVIRONMENT=.venv-mace uv sync --extra mace
-UV_PROJECT_ENVIRONMENT=.venv-mace uv run --extra mace python scripts/run_tests_mace.py
+UV_PROJECT_ENVIRONMENT=.venv-mace uv run --extra mace python scripts/run_benchmark.py --model mace
 ```
 
 On HPC systems, it is usually helpful to put caches on scratch storage:
@@ -206,24 +219,26 @@ The repository includes a SLURM template for model test workflows:
 
 ```bash
 # Five-element UPET run: V, Nb, Ta, Mo, W
-sbatch --export=ALL,MODEL=upet,RUN_MODE=bcc_elements scripts/slurm_run_model_test.sh
+sbatch --export=ALL,MODEL=upet scripts/slurm_run_model_test.sh
 
 # Single-element MACE run
-sbatch --export=ALL,MODEL=mace,RUN_MODE=single,ELEMENT=V,INITIAL_A0=2.997 scripts/slurm_run_model_test.sh
+sbatch --export=ALL,MODEL=mace,ELEMENTS=V scripts/slurm_run_model_test.sh
 ```
 
 Set `PROJECT_DIR=/path/to/AtomDefectKit` in `--export` if you submit the job
 from outside the repository.
 
-For the five-element BCC batch scripts, the repository currently includes:
+All backends share one driver, `scripts/run_benchmark.py`, which calls
+`atomdefectkit.benchmarks.run_bcc_benchmark`. Pass a comma-separated
+`--element` list to loop over several elements, `--steps` to run a subset of
+`basic,phonon,stacking_fault,traction_separation,screw`, and `--model-params`
+to override the per-model preset:
 
-- `scripts/run_tests_upet_bcc_elements.py`
-- `scripts/run_tests_7net_bcc_elements.py`
-- `scripts/run_tests_fairchem_bcc_elements.py`
-- `scripts/run_tests_grace_bcc_elements.py`
-
-These wrappers loop over `V`, `Nb`, `Ta`, `Mo`, and `W` with preset initial
-lattice guesses and call the corresponding single-element driver.
+```bash
+uv run --extra pace python scripts/run_benchmark.py --model pace \
+  --model-params '{"potential_file": "/path/to/output_potential.yaml"}' \
+  --label ACE2025 --element Nb --steps basic,screw
+```
 
 Load a model calculator:
 

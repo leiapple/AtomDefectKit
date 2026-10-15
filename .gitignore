@@ -12,8 +12,10 @@ wheels/
 # Virtual environments
 .venv
 
-# Generated test outputs
+# Generated benchmark outputs
+Test_*/
 scripts/Test_*/
+pretrained_models/
 
 # Generated demo outputs
 demo/Test_*/

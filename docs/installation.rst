@@ -46,10 +46,10 @@ Then install one backend extra:
 .. code-block:: bash
 
    uv sync --extra mace
-   uv run --extra mace python scripts/run_tests_mace.py
+   uv run --extra mace python scripts/run_benchmark.py --model mace
 
    uv sync --extra upet
-   uv run --extra upet python scripts/run_tests_upet.py
+   uv run --extra upet python scripts/run_benchmark.py --model upet
 
 If you want separate persistent environments for different backends:
 
@@ -68,7 +68,7 @@ project is explicitly provided:
 
    uv sync --project /path/to/AtomDefectKit --extra upet
    uv run --project /path/to/AtomDefectKit --extra upet \
-     python /path/to/AtomDefectKit/scripts/run_tests_upet.py
+     python /path/to/AtomDefectKit/scripts/run_benchmark.py --model upet
 
 Installing directly from GitHub
 -------------------------------
